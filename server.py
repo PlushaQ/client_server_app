@@ -63,6 +63,7 @@ class Server:
                 break
             else:
                 conn.send(json.dumps({'message': 'Unknown command'}).encode('utf8'))
+                print('Sending "Unknown command" to client')
 
 
 if __name__ == '__main__':
