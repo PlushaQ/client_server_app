@@ -8,7 +8,7 @@ class Client:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect(self.address)
 
-    def send_receive(self):
+    def manage_connection(self):
         print("""
 Commands availible:
 - help
@@ -30,4 +30,4 @@ Commands availible:
                 
 if __name__ == '__main__':
     client = Client('127.0.0.1', 64321)
-    client.send_receive()
+    client.manage_connection()

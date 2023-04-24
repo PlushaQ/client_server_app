@@ -28,8 +28,8 @@ class Server:
     @property
     def info(self):
         info = {
-            'version': '1.0',
-            'creation_date': str(self.server_start_time),
+            'Version': '1.0.0',
+            'Creation_date': str(self.server_start_time),
         }
         return {'message': info}
 
