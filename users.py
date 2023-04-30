@@ -67,6 +67,9 @@ class User:
         for index, user in enumerate(users.keys()):
             print(f'{index + 1}. {user}')
     
+    def send_message(self):
+        pass
+    
     def show_inbox(self) -> json:
         pass
 

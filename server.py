@@ -25,7 +25,19 @@ class Server:
         }
         return {'message': commands}
 
-    
+    def available_commands_after_login(self):
+        commands = {
+            'uptime': "returns the uptime of the server",
+            'info': "returns version of server and it's date creation",
+            'help': "show list of commands",
+            'stop': "stops server and client",
+            'register': 'registers new users. usage: <register username password>',
+            'login': 'log in user. usage: <login username password>',
+            'send': 'send user a message. usage <send user message(max. 255 chars)>',
+            'unread': 'shows unread messages from users inbox. usage <unread username>',
+            'inbox': 'shows users inbox. usage: <inbox username>',
+            'user_list': 'shows users in the server'  
+        }
 
     @property
     def uptime(self):
