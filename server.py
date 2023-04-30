@@ -72,7 +72,7 @@ class Server:
                 print('Sending "No command provided" to client')
 
             elif command[0] == 'uptime':
-                conn.send(json.dumps(self.uptime()).encode('utf8'))
+                conn.send(json.dumps(self.uptime).encode('utf8'))
                 print(f'Sending uptime to client ')
 
             elif command[0] == 'info':
@@ -103,6 +103,11 @@ class Server:
                 conn.send(self.user.user_list().encode('utf-8'))
                 print('Sending to client user list')
 
+            elif command[0] == 'send':
+                conn.send(self.user.send_message(command[1], ' '.join(command[2:]), self.user.username).encode('utf-8'))
+                print(f'Sending messages from {self.user.username} to {command[1]}')
+                          
+
             elif command[0] == 'stop':
                 conn.send(json.dumps({'message': 'stop'}).encode('utf8'))
                 print(f'Shutting down a server')
@@ -114,5 +119,5 @@ class Server:
 
 
 if __name__ == '__main__':
-    server = Server('127.0.0.1', 64322)
+    server = Server('127.0.0.1', 64321)
     server.run()

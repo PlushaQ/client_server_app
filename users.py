@@ -74,18 +74,21 @@ class User:
             with open('users_inbox.json', 'r', encoding='utf-8') as file:
                 messages = json.load(file)
         except (FileNotFoundError, json.decoder.JSONDecodeError):
-            return json.dumps({'message': {'error': 'There is no inbox file'}})
-        
-        unread_messages = [m for m in messages[username] if m.get('read', '') == 'no']
-
-        if len(unread_messages) > 5:
-            return json.dumps({'message': {'error': "Receiver has too many unread messages"}})
+            messages = {}
         else:
-            messages[username] += {'sender': sender, 'time': datetime.now(), 'body': message, 'read': 'no'}
-        
+            pass
+            #unread_messages = [m for m in messages[username] if m['read'] == 'no']
+            #print(unread_messages)
+            #if len(unread_messages) > 5:
+             #   return json.dumps({'message': {'error': "Receiver has too many unread messages"}})
+        time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        new_message = {'sender': sender, 'time': time, 'body': message, 'read': 'no'}
+        messages[username] += new_message 
+
         try:
-            with open('users_inbox.json', 'w', encode='utf-8') as file:
+            with open('users_inbox.json', 'w', encoding='utf-8') as file:
                 json.dump(messages, file)
+                return json.dumps({'message': {'Message': f'Message sent to {username} at {time}.'}})
         except (FileNotFoundError, json.decoder.JSONDecodeError):
             return json.dumps({'message': {'error': 'There is no inbox file'}})
     
