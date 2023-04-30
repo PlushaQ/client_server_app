@@ -69,21 +69,47 @@ class User:
             users_names[index + 1] = user
         return json.dumps({'message': users_names})
     
-    def send_message(self):
+    def send_message(self, username, message, sender):
         try:
             with open('users_inbox.json', 'r', encoding='utf-8') as file:
                 messages = json.load(file)
         except (FileNotFoundError, json.decoder.JSONDecodeError):
             return json.dumps({'message': {'error': 'There is no inbox file'}})
         
-    
-    def show_inbox(self) -> json:
-        pass
+        unread_messages = [m for m in messages[username] if m.get('read', '') == 'no']
 
-    def check_unread():
+        if len(unread_messages) > 5:
+            return json.dumps({'message': {'error': "Receiver has too many unread messages"}})
+        else:
+            messages[username] += {'sender': sender, 'time': datetime.now(), 'body': message, 'read': 'no'}
+        
+        try:
+            with open('users_inbox.json', 'w', encode='utf-8') as file:
+                json.dump(messages, file)
+        except (FileNotFoundError, json.decoder.JSONDecodeError):
+            return json.dumps({'message': {'error': 'There is no inbox file'}})
+    
+        
+    
+    def show_inbox(self, username):
+        try:
+            with open('users_inbox.json', 'r', encoding='utf-8') as file:
+                messages = json.load(file)
+        except (FileNotFoundError, json.decoder.JSONDecodeError):
+            return json.dumps({'message': {'error': 'There is no inbox file'}})
+        
+        for index, message in enumerate(messages[username]):
+            message['read'] = 'yes'
+            print(f'{index + 1}. From {message["sender"]} at {message["time"]}. \n {message["body"]}')
+
+    def check_unread(self, username):
+        pass
+    
+    @admin_required
+    def check_other_unread(self, username):
         pass
 
     @admin_required
-    def check_other_user_messages(self):
+    def check_other_user_messages(self, username):
         print('ppp')
 
