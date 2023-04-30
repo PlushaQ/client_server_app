@@ -26,7 +26,7 @@ Commands availible:
                 print('Server is shutting down!')
                 break
             else:
-                if return_msg['message'] == "Unknown command":
+                if return_msg['message'] in ["Unknown command", 'No command provided']:
                     print(return_msg['message'])
                 else:
                     for key, desc in return_msg['message'].items():
@@ -34,5 +34,5 @@ Commands availible:
                     
                 
 if __name__ == '__main__':
-    client = Client('127.0.0.1', 64321)
+    client = Client('127.0.0.1', 64322)
     client.manage_connection()

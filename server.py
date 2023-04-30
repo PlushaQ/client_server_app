@@ -2,6 +2,8 @@ import socket
 import json
 import datetime
 
+from users import User
+
 
 class Server:
     def __init__(self, host, port):
@@ -11,7 +13,7 @@ class Server:
         self.socket.bind(self.address)
         self.socket.listen()
         print(f"Listening on {self.address}")
-        self.user = None
+        self.user = User()
 
     def available_commands_before_login(self):
         commands = {
@@ -38,6 +40,7 @@ class Server:
             'inbox': 'shows users inbox. usage: <inbox username>',
             'user_list': 'shows users in the server'  
         }
+        return {'message': commands}
 
     @property
     def uptime(self):
@@ -62,21 +65,45 @@ class Server:
                 break
             
             msg = json.loads(msg)
-            command = msg['command']
+            command = msg['command'].split()
             print(f'Client send command - {command}')
-            if command == 'uptime':
+            if not command:
+                conn.send(json.dumps({'message': 'No command provided'}).encode('utf8'))
+                print('Sending "No command provided" to client')
+
+            elif command[0] == 'uptime':
                 conn.send(json.dumps(self.uptime()).encode('utf8'))
                 print(f'Sending uptime to client ')
 
-            elif command == 'info':
+            elif command[0] == 'info':
                 conn.send(json.dumps(self.info).encode('utf8'))
                 print(f'Sending server info to client ')
 
-            elif command == 'help':
-                conn.send(json.dumps(self.available_commands_before_login()).encode('utf8'))
+            elif command[0] == 'help':
+                if self.user.username is None:
+                    conn.send(json.dumps(self.available_commands_before_login()).encode('utf-8'))
+                else:
+                    conn.send(json.dumps(self.available_commands_after_login()).encode('utf-8'))
                 print(f'Sending command list to client ')
+            
+            elif command[0] == 'register':
+                if len(command) != 3:
+                    conn.send(json.dumps({'message': {'Usage': '<register username password>'}}).encode('utf-8'))
+                else:
+                    conn.send(self.user.register_user(command[1], command[2]).encode('utf-8'))
 
-            elif command == 'stop':
+            elif command[0] == 'login':
+                if len(command) != 3:
+                    conn.send(json.dumps({'message': {'Usage': '<login username password>'}}).encode('utf-8'))
+                else:
+                    conn.send(self.user.login_user(command[1], command[2]).encode('utf-8'))
+                    print(f"Logged {self.user.username} with role {self.user.role}")
+            
+            elif command[0] == 'user_list':
+                conn.send(self.user.user_list().encode('utf-8'))
+                print('Sending to client user list')
+
+            elif command[0] == 'stop':
                 conn.send(json.dumps({'message': 'stop'}).encode('utf8'))
                 print(f'Shutting down a server')
                 self.socket.close()
@@ -87,5 +114,5 @@ class Server:
 
 
 if __name__ == '__main__':
-    server = Server('127.0.0.1', 64321)
+    server = Server('127.0.0.1', 64322)
     server.run()

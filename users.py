@@ -4,56 +4,57 @@ from datetime import datetime
 
 class User:
     def __init__(self) -> None:
-        self.login = None
+        self.username = None
         self.role = None
 
     @staticmethod
-    def register_user(login, password):
-        # Function to register new users with corresponding login and password
+    def register_user(username, password):
+        # Function to register new users with corresponding username and password
         try:
             with open('users.json', 'r', encoding='utf-8') as file:
                 users = json.load(file)
         except (FileNotFoundError, json.decoder.JSONDecodeError):
             # If the file does not exist or is empty, create an empty dictionary
             users = {}
-        if login in users.keys():
+        if username in users.keys():
             # Handle the case where user exists
-            message = {'message': f'User {login} already exists'}
-            return json.dumps(message, indent=1)
+            message = {'message': {'sign up': f'User {username} already exists'}}
+            print(message)
+            return json.dumps(message, indent=1).encode('utf-8')
         
-        users[login] = {'password': password, 'role': 'user'}
+        users[username] = {'password': password, 'role': 'user'}
 
         with open('users.json', 'w', encoding='utf-8') as file:
             json.dump(users, file)
-        message = f'User {login} registered'
-
+        message = {'message': {'sign up': f'User {username} registered'}}
+        print(message) 
         return json.dumps(message, indent=1)
 
-    def login_user(self, login, password):
+    def login_user(self, username, password):
         # Function logging user
         try:
             with open('users.json', 'r', encoding='utf-8') as file:
                 users = json.load(file)
         except (FileNotFoundError, json.decoder.JSONDecodeError):
             # If the file does not exist or is empty, create an empty dictionary
-            return json.dumps({'message': "Missing or corrupted user database"})
+            return json.dumps({'message': {'log in': "Missing or corrupted user database"}})
         
-        if login in users.keys() and password == users[login][password]:
-            self.login = login
-            self.role = users[login]['role']
-            print({'message': f'User {login} logged in successfully'})
-            return json.dumps({'message': f'User {login} logged in successfully'})
+        if username in users.keys():
+            if password == users[username]['password']:
+                self.username = username
+                self.role = users[username]['role']
+                print({'message': {'log in': f'User {username} logged in successfully'}})
+                return json.dumps({'message': {'log in': f'User {username} logged in successfully'}})
         else:
-            print({'message': 'User with this login doesn\'t exist or password is incorrect'})
-            return json.dumps({'message': 'User with this login doesn\'t exist or password is incorrect'})
+            print({'message': 'User with this username doesn\'t exist or password is incorrect'})
+            return json.dumps({'message': {'log in': 'User with this username doesn\'t exist or password is incorrect'}})
             
     @staticmethod
     def admin_required(func):
         @wraps(func)
         def wrapper(self, *args, **kwargs):
             if self.role != 'admin':
-                print('bbb')
-                return json.dumps({'message': "You don't have access to this"})
+                return json.dumps({'message': {'privileges': "You don't have access to this"}})
             return func(self, *args, **kwargs)
         return wrapper
  
@@ -62,13 +63,19 @@ class User:
             with open('users.json', 'r', encoding='utf-8') as file:
                 users = json.load(file)
         except (FileNotFoundError, json.decoder.JSONDecodeError):
-            return json.dumps({'message': "Missing or corrupted user database"})
-
+            return json.dumps({'message': {'error': "Missing or corrupted user database"}})
+        users_names = {}
         for index, user in enumerate(users.keys()):
-            print(f'{index + 1}. {user}')
+            users_names[index + 1] = user
+        return json.dumps({'message': users_names})
     
     def send_message(self):
-        pass
+        try:
+            with open('users_inbox.json', 'r', encoding='utf-8') as file:
+                messages = json.load(file)
+        except (FileNotFoundError, json.decoder.JSONDecodeError):
+            return json.dumps({'message': {'error': 'There is no inbox file'}})
+        
     
     def show_inbox(self) -> json:
         pass
@@ -80,10 +87,3 @@ class User:
     def check_other_user_messages(self):
         print('ppp')
 
-
-User.register_user('test123', 'test125')
-user = User()
-user.check_other_user_messages()
-user.login_user('plushaq', 'password')
-user.check_other_user_messages()
-user.user_list()
