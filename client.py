@@ -14,7 +14,9 @@ Commands availible:
 - help
 - info
 - uptime
-- stop """)
+- stop
+- register
+- login """)
         while True:
             user_command = input('Enter the command!: ')
             self.socket.sendall(json.dumps({'command': user_command}).encode('utf8'))

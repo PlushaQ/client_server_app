@@ -11,16 +11,23 @@ class Server:
         self.socket.bind(self.address)
         self.socket.listen()
         print(f"Listening on {self.address}")
+        self.user = None
 
-    def available_commands(self):
+    def available_commands_before_login(self):
         commands = {
             'uptime': "returns the uptime of the server",
             'info': "returns version of server and it's date creation",
             'help': "show list of commands",
             'stop': "stops server and client",
+            'register': 'registers new users. usage: <register username password>',
+            'login': 'log in user. usage: <login username password>'
+
         }
         return {'message': commands}
 
+    
+
+    @property
     def uptime(self):
         uptime = {"uptime": str(datetime.datetime.now() - self.server_start_time)}
         return {'message': uptime}
@@ -32,6 +39,7 @@ class Server:
             'Creation_date': str(self.server_start_time),
         }
         return {'message': info}
+    
 
     def run(self):
         conn, addr = self.socket.accept()
@@ -53,7 +61,7 @@ class Server:
                 print(f'Sending server info to client ')
 
             elif command == 'help':
-                conn.send(json.dumps(self.available_commands()).encode('utf8'))
+                conn.send(json.dumps(self.available_commands_before_login()).encode('utf8'))
                 print(f'Sending command list to client ')
 
             elif command == 'stop':
