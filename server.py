@@ -106,6 +106,10 @@ class Server:
             elif command[0] == 'send':
                 conn.send(self.user.send_message(command[1], ' '.join(command[2:]), self.user.username).encode('utf-8'))
                 print(f'Sending messages from {self.user.username} to {command[1]}')
+            
+            elif command[0] == 'inbox':
+                conn.send(self.user.show_inbox(command[1]))
+                print(f'Showing {command[1]} inbox.')
                           
 
             elif command[0] == 'stop':
