@@ -36,11 +36,12 @@ Commands availible:
                         print(f'Sender: {message_dict["sender"]}')
                         print(f'Time: {message_dict["time"]}')
                         print(f'Body: {message_dict["body"]}')
+                        print(f'Read: {message_dict["read"]}')
                 else:
                     for key, desc in return_msg['message'].items():
                         print(f'{key} - {desc}')
                     
                 
 if __name__ == '__main__':
-    client = Client('127.0.0.1', 64322)
+    client = Client('127.0.0.1', 64321)
     client.manage_connection()
