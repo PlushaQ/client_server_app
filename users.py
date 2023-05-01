@@ -115,15 +115,18 @@ class User:
                 try:
                     if command == 'inbox':
                         messages, inbox_messages = self.check_full_inbox(messages, username)
+                        if inbox_messages == {}:
+                            return json.dumps({'message': {'Empty inbox': 'You don\'t have messages'}})
                     elif command == 'unread':
                         messages, inbox_messages = self.check_unread(messages, username)
-                    print(messages)
-                    print('----')
-                    print(inbox_messages)
+                        if inbox_messages == {}:
+                            return json.dumps({'message': {'Empty inbox': 'You don\'t have unread messages'}})
+            
                 except KeyError:
                     return json.dumps({'message': {'Empty inbox': 'You don\'t have messages'}})
                 
                 User.save_message_file(messages)
+                
                 return json.dumps({'message': {'inbox_messages': inbox_messages}}, indent=1)
             else: 
                 return json.dumps({'message': {'error': 'This isn\'t your inbox!'}})

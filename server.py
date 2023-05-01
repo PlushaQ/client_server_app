@@ -50,7 +50,7 @@ class Server:
     @property
     def info(self):
         info = {
-            'Version': '1.0.0',
+            'Version': '2.0.0',
             'Creation_date': str(self.server_start_time),
         }
         return {'message': info}
@@ -125,5 +125,5 @@ class Server:
 
 
 if __name__ == '__main__':
-    server = Server('127.0.0.1', 64321)
+    server = Server('127.0.0.1', 64322)
     server.run()

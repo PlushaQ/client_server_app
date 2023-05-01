@@ -43,5 +43,5 @@ Commands availible:
                     
                 
 if __name__ == '__main__':
-    client = Client('127.0.0.1', 64321)
+    client = Client('127.0.0.1', 64322)
     client.manage_connection()
