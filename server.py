@@ -108,7 +108,7 @@ class Server:
                 print(f'Sending messages from {self.user.username} to {command[1]}')
             
             elif command[0] == 'inbox':
-                conn.send(self.user.show_inbox(command[1]))
+                conn.send(self.user.show_inbox(command[1]).encode('utf8'))
                 print(f'Showing {command[1]} inbox.')
                           
 
@@ -123,5 +123,5 @@ class Server:
 
 
 if __name__ == '__main__':
-    server = Server('127.0.0.1', 64321)
+    server = Server('127.0.0.1', 64322)
     server.run()

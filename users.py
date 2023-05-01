@@ -25,39 +25,38 @@ class User:
             # Handle the case where user exists
             message = {'message': {'sign up': f'User {username} already exists'}}
             print(message)
-            return json.dumps(message, indent=1).encode('utf-8')
+            return json.dumps(message, indent=1)
         
         users[username] = {'password': password, 'role': 'user'}
 
         with open('users.json', 'w', encoding='utf-8') as file:
-            json.dump(users, file)
+            json.dump(users, file, indent=4)
         message = {'message': {'sign up': f'User {username} registered'}}
         print(message) 
-        return json.dumps(message, indent=1)
+        return json.dumps(message, indent=4)
 
     def login_user(self, username, password):
         # Function logging user
         users = User.open_user_file()
         
-        if username in users.keys():
-            if password == users[username]['password']:
-                self.username = username
-                self.role = users[username]['role']
-                print({'message': {'log in': f'User {username} logged in successfully'}})
-                return json.dumps({'message': {'log in': f'User {username} logged in successfully'}})
+        if username in users.keys() and password == users[username]['password']:
+            self.username = username
+            self.role = users[username]['role']
+            print({'message': {'log in': f'User {username} logged in successfully'}})
+            return json.dumps({'message': {'log in': f'User {username} logged in successfully'}})
         else:
             print({'message': 'User with this username doesn\'t exist or password is incorrect'})
             return json.dumps({'message': {'log in': 'User with this username doesn\'t exist or password is incorrect'}})
-            
-    @staticmethod
-    def admin_required(func):
+    
+    def login_required(func):
         @wraps(func)
         def wrapper(self, *args, **kwargs):
-            if self.role != 'admin':
-                return json.dumps({'message': {'privileges': "You don't have access to this"}})
+            if self.username is None:
+                return json.dumps({'message': {'privileges': 'You need to login to access this!'}})
             return func(self, *args, **kwargs)
         return wrapper
- 
+    
+    @login_required
     def user_list(self):
         users = User.open_user_file()
         users_names = {}
@@ -65,6 +64,7 @@ class User:
             users_names[index + 1] = user
         return json.dumps({'message': users_names})
     
+    @login_required
     def send_message(self, username, message, sender):
         users = User.open_user_file()
         # Handle the case where user exists
@@ -94,34 +94,67 @@ class User:
             # Saving new message
             try:
                 with open('users_inbox.json', 'w', encoding='utf-8') as file:
-                    json.dump(messages, file)
+                    json.dump(messages, file, indent=4)
                     return json.dumps({'message': {'Message': f'Message sent to {username} at {time}.'}})
             except (FileNotFoundError, json.decoder.JSONDecodeError):
                 return json.dumps({'message': {'error': 'There is no inbox file'}})
         else:
             return json.dumps({'message': {'error': f'User with username `{username}` doesn\'t exists!'}})
         
-    
+    @login_required
     def show_inbox(self, username):
-        try:
-            with open('users_inbox.json', 'r', encoding='utf-8') as file:
-                messages = json.load(file)
-        except (FileNotFoundError, json.decoder.JSONDecodeError):
-            return json.dumps({'message': {'error': 'There is no inbox file'}})
-        
-        for message in messages[username]:
-            print(message)
-            #message['read'] = 'yes'
-            #print(f'{message}. From {message["sender"]} at {message["time"]}. \n {message["body"]}')
+            if username == self.username:
+                try:
+                    with open('users_inbox.json', 'r', encoding='utf-8') as file:
+                        messages = json.load(file)
+                except (FileNotFoundError, json.decoder.JSONDecodeError):
+                    return json.dumps({'message': {'error': 'There is no inbox file'}})
+                
+                inbox_messages = {}
+                for message_id, message_dict in messages[username].items():
+                    message_dict['read'] = 'yes'
+                    inbox_messages[message_id] = {
+                        'sender': message_dict['sender'],
+                        'time': message_dict['time'],
+                        'body': message_dict['body']
+                    }
+                
+                try:
+                    with open('users_inbox.json', 'w', encoding='utf-8') as file:
+                        json.dump(messages, file, indent=4)
+                except (FileNotFoundError, json.decoder.JSONDecodeError):
+                    return json.dumps({'message': {'error': 'There is no inbox file'}})
+                
+                print(inbox_messages)
+                return json.dumps({'message': {'inbox_messages': inbox_messages}}, indent=1)
 
+    @login_required
     def check_unread(self, username):
-        pass
-    
-    @admin_required
-    def check_other_unread(self, username):
-        pass
+        if username == self.username or self.role == 'admin':
+            try:
+                with open('users_inbox.json', 'r', encoding='utf-8') as file:
+                    messages = json.load(file)
+            except (FileNotFoundError, json.decoder.JSONDecodeError):
+                return json.dumps({'message': {'error': 'There is no inbox file'}})
+            
+            inbox_messages = {}
+            for message_id, message_dict in messages[username].items():
+                if message_dict['read'] = 'no':
+                    inbox_messages[message_id] = {
+                        'sender': message_dict['sender'],
+                        'time': message_dict['time'],
+                        'body': message_dict['body']
+                    }
+                message_dict['read'] = 'yes'
+            
+            try:
+                with open('users_inbox.json', 'w', encoding='utf-8') as file:
+                    json.dump(messages, file, indent=4)
+            except (FileNotFoundError, json.decoder.JSONDecodeError):
+                return json.dumps({'message': {'error': 'There is no inbox file'}})
+            
+            print(inbox_messages)
+            return json.dumps({'message': {'inbox_messages': inbox_messages}}, indent=1)
 
-    @admin_required
-    def check_other_user_messages(self, username):
-        print('ppp')
+    
 

@@ -28,11 +28,19 @@ Commands availible:
             else:
                 if return_msg['message'] in ["Unknown command", 'No command provided']:
                     print(return_msg['message'])
+                elif 'inbox_messages' in return_msg['message']:
+                    inbox_messages = return_msg['message']['inbox_messages']
+                    for message_id, message_dict in inbox_messages.items():
+                        print('--------------------------')
+                        print(f'Message ID: {message_id}')
+                        print(f'Sender: {message_dict["sender"]}')
+                        print(f'Time: {message_dict["time"]}')
+                        print(f'Body: {message_dict["body"]}')
                 else:
                     for key, desc in return_msg['message'].items():
                         print(f'{key} - {desc}')
                     
                 
 if __name__ == '__main__':
-    client = Client('127.0.0.1', 64321)
+    client = Client('127.0.0.1', 64322)
     client.manage_connection()
