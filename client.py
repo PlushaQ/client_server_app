@@ -10,7 +10,7 @@ class Client:
 
     def manage_connection(self):
         print("""
-Commands availible: 
+Commands availible:
 - help
 - info
 - uptime

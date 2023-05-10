@@ -6,21 +6,23 @@ class User:
     def __init__(self) -> None:
         self.username = None
         self.role = None
+        self.users_file = 'users.json'
+        self.users_inbox_file = 'users_inbox.json'
     
-    @staticmethod
-    def open_user_file():
+   
+    def open_user_file(self):
         try:
-            with open('users.json', 'r', encoding='utf-8') as file:
+            with open(self.users_file, 'r', encoding='utf-8') as file:
                 users = json.load(file)
         except (FileNotFoundError, json.decoder.JSONDecodeError):
             # If the file does not exist or is empty, create an empty dictionary
             users = {}
         return users
     
-    @staticmethod
-    def open_message_file(username):
+    
+    def open_message_file(self, username):
         try:
-            with open('users_inbox.json', 'r', encoding='utf-8') as file:
+            with open(self.users_inbox_file, 'r', encoding='utf-8') as file:
                 messages = json.load(file)
         except (FileNotFoundError, json.decoder.JSONDecodeError):
             messages = {}
@@ -31,27 +33,27 @@ class User:
                 messages[username] = {} 
         return messages
     
-    @staticmethod
-    def save_message_file(messages):
+
+    def save_message_file(self, messages):
         try:
-            with open('users_inbox.json', 'w', encoding='utf-8') as file:
+            with open(self.users_inbox_file, 'w', encoding='utf-8') as file:
                 json.dump(messages, file, indent=4)
         except (FileNotFoundError, json.decoder.JSONDecodeError):
             return json.dumps({'message': {'error': 'There is no inbox file'}})
 
-    @staticmethod
-    def register_user(username, password):
+    
+    def register_user(self, username, password, role='user'):
         # Function to register new users with corresponding username and password
-        users = User.open_user_file()
+        users = self.open_user_file()
         if username in users.keys():
             # Handle the case where user exists
             message = {'message': {'sign up': f'User {username} already exists'}}
 
             return json.dumps(message, indent=1)
         
-        users[username] = {'password': password, 'role': 'user'}
+        users[username] = {'password': password, 'role': role}
 
-        with open('users.json', 'w', encoding='utf-8') as file:
+        with open(self.users_file, 'w', encoding='utf-8') as file:
             json.dump(users, file, indent=4)
         message = {'message': {'sign up': f'User {username} registered'}}
 
@@ -59,7 +61,7 @@ class User:
 
     def login_user(self, username, password):
         # Function logging user
-        users = User.open_user_file()
+        users = self.open_user_file()
         
         if username in users.keys() and password == users[username]['password']:
             self.username = username
@@ -78,7 +80,7 @@ class User:
     
     @login_required
     def user_list(self):
-        users = User.open_user_file()
+        users = self.open_user_file()
         users_names = {}
         for index, user in enumerate(users.keys()):
             users_names[index + 1] = user
@@ -86,11 +88,11 @@ class User:
     
     @login_required
     def send_message(self, username, message, sender):
-        users = User.open_user_file()
+        users = self.open_user_file()
         # Handle the case where user exists
         if username in users.keys():
             # Block catching problems with files
-            messages = User.open_message_file(username)
+            messages = self.open_message_file(username)
             unread_messages = [messages[username][m] for m in messages[username] if messages[username][m]['read'] == 'no']
             if len(unread_messages) > 5:
                 return json.dumps({'message': {'error': "Receiver has too many unread messages"}})
@@ -102,7 +104,7 @@ class User:
             messages[username][f"{len(messages[username]) + 1}"] = new_message
 
             # Saving new message
-            User.save_message_file(messages)
+            self.save_message_file(messages)
             return json.dumps({'message': {'Message': f'Message sent to {username} at {time}.'}})
         else:
             return json.dumps({'message': {'error': f'User with username `{username}` doesn\'t exists!'}})
@@ -110,7 +112,7 @@ class User:
     @login_required
     def show_inbox(self, username, command):
             if username == self.username or self.role == 'admin':
-                messages = User.open_message_file(username)
+                messages = self.open_message_file(username)
                 
                 try:
                     if command == 'inbox':
@@ -125,7 +127,7 @@ class User:
                 except KeyError:
                     return json.dumps({'message': {'Empty inbox': 'You don\'t have messages'}})
                 
-                User.save_message_file(messages)
+                self.save_message_file(messages)
                 
                 return json.dumps({'message': {'inbox_messages': inbox_messages}}, indent=1)
             else: 

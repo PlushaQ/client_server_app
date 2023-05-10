@@ -1,7 +1,6 @@
 import unittest
 import socket
-import json
-import datetime
+
 
 from server import Server
 from users import User
@@ -59,6 +58,7 @@ class TestServer(unittest.TestCase):
         info_dict = self.server.info['message']
         self.assertRegex(info_dict['Version'], r'^[0-9]+.[0-9]+.[0-9]+$')
         self.assertEqual(info_dict['Creation_date'], str(self.server.server_start_time))
+
 
 if __name__ == '__main__':
     unittest.main()
