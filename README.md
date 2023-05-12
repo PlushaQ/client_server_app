@@ -1,9 +1,8 @@
 # simple_client_server_app
 This is a client-server application where the client can send a command to the server, and the server returns the appropriate response based on the command.
-Installation
+## Installation
 
-This application requires Python 3 to run. Clone the repository and navigate to the directory in the command line.
-## Usage
+    This application requires Python 3 to run. Clone the repository and navigate to the directory in the command line.
 
 ### Starting the server
 
@@ -21,9 +20,19 @@ This application requires Python 3 to run. Clone the repository and navigate to 
 
     The client will connect to the server and display a list of available commands. Enter a command to receive a response from the server.
 
-The available commands are:
+The available commands before login are:
 
-    help: show the list of commands
-    info: return the version of the server and its date of creation
-    uptime: return the uptime of the server
-    stop: stop the server and the client
+    'uptime': 'returns the uptime of the server',
+    'info': 'returns version of server and it's date creation',
+    'help': 'show list of commands',
+    'stop': 'stops server and client',
+    'register': 'registers new users. usage: <register username password>',
+    'login': 'log in user. usage: <login username password>',
+
+The available commands after login are expanded to:
+
+    'send': 'send user a message. usage <send user message(max. 255 chars)>',
+    'unread': 'shows unread messages from users inbox. usage <unread username>',
+    'inbox': 'shows users inbox. usage: <inbox username>',
+    'user_list': 'shows users in the server'  
+  
