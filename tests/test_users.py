@@ -2,7 +2,7 @@ import json
 import unittest
 import os
 
-from users import User
+from users.users import User
 
 class TestUsers(unittest.TestCase):
     def setUp(self):

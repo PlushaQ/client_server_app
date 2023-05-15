@@ -6,8 +6,8 @@ class User:
     def __init__(self) -> None:
         self.username = None
         self.role = None
-        self.users_file = 'users.json'
-        self.users_inbox_file = 'users_inbox.json'
+        self.users_file = 'database/users.json'
+        self.users_inbox_file = 'database/users_inbox.json'
     
    
     def open_user_file(self):

@@ -24,6 +24,7 @@ Commands availible:
             return_msg = json.loads(return_msg)
             if return_msg['message'] == 'stop':
                 print('Server is shutting down!')
+                self.socket.close()
                 break
             else:
                 if return_msg['message'] in ["Unknown command", 'No command provided']:

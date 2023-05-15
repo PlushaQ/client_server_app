@@ -3,8 +3,7 @@ import socket
 
 
 from server import Server
-from users import User
-
+from users.users import User
 
 
 

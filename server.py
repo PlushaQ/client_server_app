@@ -2,7 +2,7 @@ import socket
 import json
 import datetime
 
-from users import User
+from users.users import User
 
 
 class Server:
@@ -66,7 +66,7 @@ class Server:
             
             msg = json.loads(msg)
             command = msg['command'].split()
-            print(f'Client send command - {command}')
+            print(f'Client send command - {command[0]}')
             if not command:
                 conn.send(json.dumps({'message': 'No command provided'}).encode('utf8'))
                 print('Sending "No command provided" to client')
@@ -89,12 +89,15 @@ class Server:
             elif command[0] == 'register':
                 if len(command) != 3:
                     conn.send(json.dumps({'message': {'Usage': '<register username password>'}}).encode('utf-8'))
+                    print('Sending usage information to client')
                 else:
                     conn.send(self.user.register_user(command[1], command[2]).encode('utf-8'))
+                    print('User registered')
 
             elif command[0] == 'login':
                 if len(command) != 3:
                     conn.send(json.dumps({'message': {'Usage': '<login username password>'}}).encode('utf-8'))
+                    print('Sending usage information to client')
                 else:
                     conn.send(self.user.login_user(command[1], command[2]).encode('utf-8'))
                     print(f"Logged {self.user.username} with role {self.user.role}")
@@ -104,8 +107,12 @@ class Server:
                 print('Sending to client user list')
 
             elif command[0] == 'send':
-                conn.send(self.user.send_message(command[1], ' '.join(command[2:]), self.user.username).encode('utf-8'))
-                print(f'Sending messages from {self.user.username} to {command[1]}')
+                if len(command) < 3:
+                    conn.send(json.dumps({'message': {'Usage': '<send username message>'}}).encode('utf-8'))
+                    print('Sending usage information to client')
+                else:
+                    conn.send(self.user.send_message(command[1], ' '.join(command[2:]), self.user.username).encode('utf-8'))
+                    print(f'Sending messages from {self.user.username} to {command[1]}')
             
             elif command[0] == 'inbox' or command[0] == 'unread':
                 if len(command) != 2:
