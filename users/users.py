@@ -1,16 +1,15 @@
 import json
 from functools import wraps
 from datetime import datetime
+from database.database import ClientServerDatabase
 
 class User:
     def __init__(self) -> None:
         self.username = None
         self.role = None
-        self.users_file = 'database/users.json'
-        self.users_inbox_file = 'database/users_inbox.json'
-    
+        self.db = ClientServerDatabase()
    
-    def open_user_file(self):
+    """  def open_user_file(self):
         try:
             with open(self.users_file, 'r', encoding='utf-8') as file:
                 users = json.load(file)
@@ -39,33 +38,31 @@ class User:
             with open(self.users_inbox_file, 'w', encoding='utf-8') as file:
                 json.dump(messages, file, indent=4)
         except (FileNotFoundError, json.decoder.JSONDecodeError):
-            return json.dumps({'message': {'error': 'There is no inbox file'}})
+            return json.dumps({'message': {'error': 'There is no inbox file'}}) 
+"""
 
-    
     def register_user(self, username, password, role='user'):
         # Function to register new users with corresponding username and password
-        users = self.open_user_file()
-        if username in users.keys():
+        users = self.db.get_list_of_users()
+        if username in users:
             # Handle the case where user exists
             message = {'message': {'sign up': f'User {username} already exists'}}
 
             return json.dumps(message, indent=1)
         
-        users[username] = {'password': password, 'role': role}
+        self.db.register_new_user(username, password, role)
 
-        with open(self.users_file, 'w', encoding='utf-8') as file:
-            json.dump(users, file, indent=4)
         message = {'message': {'sign up': f'User {username} registered'}}
 
         return json.dumps(message, indent=4)
 
     def login_user(self, username, password):
         # Function logging user
-        users = self.open_user_file()
-        
-        if username in users.keys() and password == users[username]['password']:
+        user = self.db.get_user(username)
+
+        if user and user['password'] == password:
             self.username = username
-            self.role = users[username]['role']
+            self.role = user['role']
             return json.dumps({'message': {'log in': f'User {username} logged in successfully'}})
         else:
             return json.dumps({'message': {'log in': 'User with this username doesn\'t exist or password is incorrect'}})
