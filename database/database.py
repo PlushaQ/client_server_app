@@ -32,7 +32,7 @@ class ClientServerDatabase:
             cursor.close()
             return users
     
-    def get_user(self, username):
+    def get_user_info(self, username):
         with DatabaseConnection() as conn:
             cursor = conn.cursor()
             cursor.execute('SELECT * FROM users WHERE username = %s', (username,))
@@ -49,12 +49,31 @@ class ClientServerDatabase:
             return user
         
     def register_new_user(self, username, password, role):
-        
         with DatabaseConnection() as conn:
             cursor = conn.cursor()
             cursor.execute('INSERT INTO users VALUES (%s, %s, %s)', (username, password, role))
             cursor.close()
 
+    def get_user_messages(self, username):
+        with DatabaseConnection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT message_id, sender, time, body, is_read FROM messages WHERE username = %s', (username,))
+            messages = cursor.fetchall()
+            messages = [{'message_id': message[0], 'sender': message[1], 'time': message[2], 'body': message[3], 'read': message[4]} for message in messages]
+            cursor.close()
+            return messages
+    
+    def send_message(self, receiver, new_message):
+        with DatabaseConnection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('INSERT INTO messages VALUES (%s, %s, %s, %s, %s, %s)',
+                            (receiver,
+                             new_message['message_id'],
+                             new_message['sender'],
+                             new_message['time'],
+                             new_message['body'],
+                             new_message['read']))
+            cursor.close()
 
 db = ClientServerDatabase()
-print(db.get_user('pluhaq'))
+print(db.get_user_messages('plushaq'))

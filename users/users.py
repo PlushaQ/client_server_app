@@ -58,7 +58,7 @@ class User:
 
     def login_user(self, username, password):
         # Function logging user
-        user = self.db.get_user(username)
+        user = self.db.get_user_info(username)
 
         if user and user['password'] == password:
             self.username = username
@@ -77,32 +77,31 @@ class User:
     
     @login_required
     def user_list(self):
-        users = self.open_user_file()
+        users = self.db.get_list_of_users()
         users_names = {}
-        for index, user in enumerate(users.keys()):
+        for index, user in enumerate(users):
             users_names[index + 1] = user
         return json.dumps({'message': users_names})
     
     @login_required
     def send_message(self, username, message, sender):
-        users = self.open_user_file()
+        users = self.db.get_list_of_users()
         # Handle the case where user exists
-        if username in users.keys():
+        if username in users:
             # Block catching problems with files
-            messages = self.open_message_file(username)
-            unread_messages = [messages[username][m] for m in messages[username] if messages[username][m]['read'] == 'no']
-            if len(unread_messages) > 5:
+            messages = self.db.get_user_messages(username)
+            unread_messages = sum(1 for message in messages if message.get('read'))
+            if unread_messages > 5:
                 return json.dumps({'message': {'error': "Receiver has too many unread messages"}})
                 
             # Creating new message 
-            time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            new_message = {'sender': sender, 'time': time, 'body': message, 'read': 'no'}
+            time = datetime.now()
+            new_message = {'message_id': len(messages) + 1, 'sender': sender, 'time': time, 'body': message, 'read': 'no'}
 
-            messages[username][f"{len(messages[username]) + 1}"] = new_message
 
             # Saving new message
-            self.save_message_file(messages)
-            return json.dumps({'message': {'Message': f'Message sent to {username} at {time}.'}})
+            self.db.send_message(username, new_message)
+            return json.dumps({'message': {'Message': f'Message sent to {username} at {time.strftime("%Y-%m-%d %H:%M:%S")}.'}})
         else:
             return json.dumps({'message': {'error': f'User with username `{username}` doesn\'t exists!'}})
         
