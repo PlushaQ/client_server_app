@@ -59,7 +59,13 @@ class ClientServerDatabase:
             cursor = conn.cursor()
             cursor.execute('SELECT message_id, sender, time, body, is_read FROM messages WHERE username = %s', (username,))
             messages = cursor.fetchall()
-            messages = [{'message_id': message[0], 'sender': message[1], 'time': message[2], 'body': message[3], 'read': message[4]} for message in messages]
+            messages = {
+                message[0]: {
+                 'sender': message[1],
+                 'time': message[2].strftime('%Y-%m-%d %H:%M:%S'),
+                 'body': message[3],
+                 'read': message[4]}
+                  for message in messages}
             cursor.close()
             return messages
     
@@ -74,6 +80,25 @@ class ClientServerDatabase:
                              new_message['body'],
                              new_message['read']))
             cursor.close()
+    
+    def get_user_unread_messages(self, username):
+        with DatabaseConnection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT message_id, sender, time, body, is_read FROM messages WHERE username = %s AND is_read = 'f'" , (username,))
+            messages = cursor.fetchall()
+            messages = {
+                message[0]: {
+                 'sender': message[1],
+                 'time': message[2].strftime('%Y-%m-%d %H:%M:%S'),
+                 'body': message[3],
+                 'read': message[4]}
+                  for message in messages}
+            cursor.close()
+            return messages
+        
+    def mark_unread_as_read(self, username):
+        with DatabaseConnection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE messages SET is_read = True WHERE username = %s", (username, ))
+            cursor.close()
 
-db = ClientServerDatabase()
-print(db.get_user_messages('plushaq'))

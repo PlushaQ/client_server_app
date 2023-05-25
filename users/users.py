@@ -9,38 +9,6 @@ class User:
         self.role = None
         self.db = ClientServerDatabase()
    
-    """  def open_user_file(self):
-        try:
-            with open(self.users_file, 'r', encoding='utf-8') as file:
-                users = json.load(file)
-        except (FileNotFoundError, json.decoder.JSONDecodeError):
-            # If the file does not exist or is empty, create an empty dictionary
-            users = {}
-        return users
-    
-    
-    def open_message_file(self, username):
-        try:
-            with open(self.users_inbox_file, 'r', encoding='utf-8') as file:
-                messages = json.load(file)
-        except (FileNotFoundError, json.decoder.JSONDecodeError):
-            messages = {}
-            if username not in messages:
-                messages[username] = {} 
-        else:
-            if username not in messages:
-                messages[username] = {} 
-        return messages
-    
-
-    def save_message_file(self, messages):
-        try:
-            with open(self.users_inbox_file, 'w', encoding='utf-8') as file:
-                json.dump(messages, file, indent=4)
-        except (FileNotFoundError, json.decoder.JSONDecodeError):
-            return json.dumps({'message': {'error': 'There is no inbox file'}}) 
-"""
-
     def register_user(self, username, password, role='user'):
         # Function to register new users with corresponding username and password
         users = self.db.get_list_of_users()
@@ -90,7 +58,7 @@ class User:
         if username in users:
             # Block catching problems with files
             messages = self.db.get_user_messages(username)
-            unread_messages = sum(1 for message in messages if message.get('read'))
+            unread_messages = sum(1 for message in messages if messages[message]['read'] == 'False')
             if unread_messages > 5:
                 return json.dumps({'message': {'error': "Receiver has too many unread messages"}})
                 
@@ -108,50 +76,23 @@ class User:
     @login_required
     def show_inbox(self, username, command):
             if username == self.username or self.role == 'admin':
-                messages = self.open_message_file(username)
-                
                 try:
                     if command == 'inbox':
-                        messages, inbox_messages = self.check_full_inbox(messages, username)
-                        if inbox_messages == {}:
+                        messages = self.db.get_user_messages(username)
+                        if messages == {}:
                             return json.dumps({'message': {'Empty inbox': 'You don\'t have messages'}})
                     elif command == 'unread':
-                        messages, inbox_messages = self.check_unread(messages, username)
-                        if inbox_messages == {}:
+                        messages = self.db.get_user_unread_messages(username)
+                        if messages == {}:
                             return json.dumps({'message': {'Empty inbox': 'You don\'t have unread messages'}})
             
                 except KeyError:
                     return json.dumps({'message': {'Empty inbox': 'You don\'t have messages'}})
-                
-                self.save_message_file(messages)
-                
-                return json.dumps({'message': {'inbox_messages': inbox_messages}}, indent=1)
+
+                self.db.mark_unread_as_read(username)    
+                return json.dumps({'message': {'inbox_messages': messages}}, indent=1)
             else: 
                 return json.dumps({'message': {'error': 'This isn\'t your inbox!'}})
 
-    def check_unread(self, messages, username):
-        inbox_messages = {}
-        for message_id, message_dict in messages[username].items():
-            if message_dict['read'] == 'no':
-                inbox_messages[message_id] = {
-                    'sender': message_dict['sender'],
-                    'time': message_dict['time'],
-                    'body': message_dict['body'],
-                    'read': message_dict['read']
-                }
-            message_dict['read'] = 'yes'
-        return messages, inbox_messages
-        
-    def check_full_inbox(self, messages, username):
-        inbox_messages = {}
-        for message_id, message_dict in messages[username].items():
-            inbox_messages[message_id] = {
-                'sender': message_dict['sender'],
-                'time': message_dict['time'],
-                'body': message_dict['body'],
-                'read': message_dict['read']
-            }
-            message_dict['read'] = 'yes'
-        return messages, inbox_messages
     
 
