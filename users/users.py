@@ -45,6 +45,7 @@ class User:
     
     @login_required
     def user_list(self):
+        # Function to retrieve the list of users
         users = self.db.get_list_of_users()
         users_names = {}
         for index, user in enumerate(users):
@@ -53,6 +54,7 @@ class User:
     
     @login_required
     def send_message(self, username, message, sender):
+        # Function to send a message to another user
         users = self.db.get_list_of_users()
         # Handle the case where user exists
         if username in users:
@@ -75,24 +77,25 @@ class User:
         
     @login_required
     def show_inbox(self, username, command):
-            if username == self.username or self.role == 'admin':
-                try:
-                    if command == 'inbox':
-                        messages = self.db.get_user_messages(username)
-                        if messages == {}:
-                            return json.dumps({'message': {'Empty inbox': 'You don\'t have messages'}})
-                    elif command == 'unread':
-                        messages = self.db.get_user_unread_messages(username)
-                        if messages == {}:
-                            return json.dumps({'message': {'Empty inbox': 'You don\'t have unread messages'}})
-            
-                except KeyError:
-                    return json.dumps({'message': {'Empty inbox': 'You don\'t have messages'}})
+        # Function to display the inbox or unread messages of a user
+        if username == self.username or self.role == 'admin':
+            try:
+                if command == 'inbox':
+                    messages = self.db.get_user_messages(username)
+                    if messages == {}:
+                        return json.dumps({'message': {'Empty inbox': 'You don\'t have messages'}})
+                elif command == 'unread':
+                    messages = self.db.get_user_unread_messages(username)
+                    if messages == {}:
+                        return json.dumps({'message': {'Empty inbox': 'You don\'t have unread messages'}})
+        
+            except KeyError:
+                return json.dumps({'message': {'Empty inbox': 'You don\'t have messages'}})
 
-                self.db.mark_unread_as_read(username)    
-                return json.dumps({'message': {'inbox_messages': messages}}, indent=1)
-            else: 
-                return json.dumps({'message': {'error': 'This isn\'t your inbox!'}})
+            self.db.mark_unread_as_read(username)    
+            return json.dumps({'message': {'inbox_messages': messages}}, indent=1)
+        else: 
+            return json.dumps({'message': {'error': 'This isn\'t your inbox!'}})
 
     
 

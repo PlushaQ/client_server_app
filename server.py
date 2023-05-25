@@ -16,6 +16,7 @@ class Server:
         self.user = User()
 
     def available_commands_before_login(self):
+        # Returns a dictionary of available commands before user login.
         commands = {
             'uptime': "returns the uptime of the server",
             'info': "returns version of server and it's date creation",
@@ -28,6 +29,7 @@ class Server:
         return {'message': commands}
 
     def available_commands_after_login(self):
+        # Returns a dictionary of available commands after user login.
         commands = {
             'uptime': "returns the uptime of the server",
             'info': "returns version of server and it's date creation",
@@ -44,11 +46,13 @@ class Server:
 
     @property
     def uptime(self):
+        # Returns an uptime of the server
         uptime = {"uptime": str(datetime.datetime.now() - self.server_start_time)}
         return {'message': uptime}
 
     @property
     def info(self):
+        # Returns a server info
         info = {
             'Version': '2.0.0',
             'Creation_date': str(self.server_start_time),
@@ -57,9 +61,12 @@ class Server:
     
 
     def run(self):
+        # Accept incoming connections
         conn, addr = self.socket.accept()
         print(f'Connected by {addr}')
+
         while True:
+            # Receive command from the client
             msg = conn.recv(1024).decode('utf8')
             if not msg:
                 break
@@ -67,6 +74,8 @@ class Server:
             msg = json.loads(msg)
             command = msg['command'].split()
             print(f'Client send command - {command[0]}')
+
+            # Manage various commands
             if not command:
                 conn.send(json.dumps({'message': 'No command provided'}).encode('utf8'))
                 print('Sending "No command provided" to client')

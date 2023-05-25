@@ -3,14 +3,19 @@ from .database_connection import DatabaseConnection
 
 class ClientServerDatabase:
     def __init__(self, database):
-        self.db_conn = DatabaseConnection(database)
+        # Initialize the ClientServerDatabase object
+        self.db_conn = DatabaseConnection(database) # Create a DatabaseConnection object with the specified database
         with self.db_conn as connection:
             cursor = connection.cursor()
+
+            # Create the 'users' table if it doesn't exist
             cursor.execute('''CREATE TABLE IF NOT EXISTS users (
                             username VARCHAR(255) PRIMARY KEY,
                             password VARCHAR(255),
                             role VARCHAR(5)
                             );''')
+            
+            # Create the 'messages' table if it doesn't exist
             cursor.execute('''CREATE TABLE IF NOT EXISTS messages (
                             username VARCHAR(255) REFERENCES users (username),
                             message_id INTEGER,
@@ -23,6 +28,7 @@ class ClientServerDatabase:
             cursor.close()
 
     def get_list_of_users(self):
+        # Retrieve a list of usernames from the 'users' table
         with self.db_conn as conn:
             cursor = conn.cursor()
             cursor.execute('SELECT username FROM users;')
@@ -34,6 +40,7 @@ class ClientServerDatabase:
             return users
     
     def get_user_info(self, username):
+        # Retrieve information about a user from the 'users' table
         with self.db_conn as conn:
             cursor = conn.cursor()
             cursor.execute('SELECT * FROM users WHERE username = %s', (username,))
@@ -50,12 +57,14 @@ class ClientServerDatabase:
             return user
         
     def register_new_user(self, username, password, role):
+        # Register a new user in the 'users' table
         with self.db_conn as conn:
             cursor = conn.cursor()
             cursor.execute('INSERT INTO users VALUES (%s, %s, %s)', (username, password, role))
             cursor.close()
 
     def get_user_messages(self, username):
+        # Retrieve messages for a specific user from the 'messages' table
         with self.db_conn as conn:
             cursor = conn.cursor()
             cursor.execute('SELECT message_id, sender, time, body, is_read FROM messages WHERE username = %s', (username,))
@@ -71,6 +80,7 @@ class ClientServerDatabase:
             return messages
     
     def send_message(self, receiver, new_message):
+        # Insert a new message into the 'messages' table
         with self.db_conn as conn:
             cursor = conn.cursor()
             cursor.execute('INSERT INTO messages VALUES (%s, %s, %s, %s, %s, %s)',
@@ -83,6 +93,7 @@ class ClientServerDatabase:
             cursor.close()
     
     def get_user_unread_messages(self, username):
+        # Retrieve unread messages for a specific user from the 'messages' table
         with self.db_conn as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT message_id, sender, time, body, is_read FROM messages WHERE username = %s AND is_read = 'f'" , (username,))
@@ -98,6 +109,7 @@ class ClientServerDatabase:
             return messages
         
     def mark_unread_as_read(self, username):
+        # Mark unread messages as read for a specific user in the 'messages' table
         with self.db_conn as conn:
             cursor = conn.cursor()
             cursor.execute("UPDATE messages SET is_read = True WHERE username = %s", (username, ))
