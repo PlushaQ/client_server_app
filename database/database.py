@@ -2,8 +2,9 @@ from .database_connection import DatabaseConnection
 
 
 class ClientServerDatabase:
-    def __init__(self):
-        with DatabaseConnection() as connection:
+    def __init__(self, database):
+        self.db_conn = DatabaseConnection(database)
+        with self.db_conn as connection:
             cursor = connection.cursor()
             cursor.execute('''CREATE TABLE IF NOT EXISTS users (
                             username VARCHAR(255) PRIMARY KEY,
@@ -22,7 +23,7 @@ class ClientServerDatabase:
             cursor.close()
 
     def get_list_of_users(self):
-        with DatabaseConnection() as conn:
+        with self.db_conn as conn:
             cursor = conn.cursor()
             cursor.execute('SELECT username FROM users;')
 
@@ -33,7 +34,7 @@ class ClientServerDatabase:
             return users
     
     def get_user_info(self, username):
-        with DatabaseConnection() as conn:
+        with self.db_conn as conn:
             cursor = conn.cursor()
             cursor.execute('SELECT * FROM users WHERE username = %s', (username,))
             user = cursor.fetchone()
@@ -49,18 +50,18 @@ class ClientServerDatabase:
             return user
         
     def register_new_user(self, username, password, role):
-        with DatabaseConnection() as conn:
+        with self.db_conn as conn:
             cursor = conn.cursor()
             cursor.execute('INSERT INTO users VALUES (%s, %s, %s)', (username, password, role))
             cursor.close()
 
     def get_user_messages(self, username):
-        with DatabaseConnection() as conn:
+        with self.db_conn as conn:
             cursor = conn.cursor()
             cursor.execute('SELECT message_id, sender, time, body, is_read FROM messages WHERE username = %s', (username,))
             messages = cursor.fetchall()
             messages = {
-                message[0]: {
+                str(message[0]): {
                  'sender': message[1],
                  'time': message[2].strftime('%Y-%m-%d %H:%M:%S'),
                  'body': message[3],
@@ -70,7 +71,7 @@ class ClientServerDatabase:
             return messages
     
     def send_message(self, receiver, new_message):
-        with DatabaseConnection() as conn:
+        with self.db_conn as conn:
             cursor = conn.cursor()
             cursor.execute('INSERT INTO messages VALUES (%s, %s, %s, %s, %s, %s)',
                             (receiver,
@@ -82,12 +83,12 @@ class ClientServerDatabase:
             cursor.close()
     
     def get_user_unread_messages(self, username):
-        with DatabaseConnection() as conn:
+        with self.db_conn as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT message_id, sender, time, body, is_read FROM messages WHERE username = %s AND is_read = 'f'" , (username,))
             messages = cursor.fetchall()
             messages = {
-                message[0]: {
+                str(message[0]): {
                  'sender': message[1],
                  'time': message[2].strftime('%Y-%m-%d %H:%M:%S'),
                  'body': message[3],
@@ -97,7 +98,7 @@ class ClientServerDatabase:
             return messages
         
     def mark_unread_as_read(self, username):
-        with DatabaseConnection() as conn:
+        with self.db_conn as conn:
             cursor = conn.cursor()
             cursor.execute("UPDATE messages SET is_read = True WHERE username = %s", (username, ))
             cursor.close()

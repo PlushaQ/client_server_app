@@ -7,7 +7,7 @@ class User:
     def __init__(self) -> None:
         self.username = None
         self.role = None
-        self.db = ClientServerDatabase()
+        self.db = ClientServerDatabase('database.env')
    
     def register_user(self, username, password, role='user'):
         # Function to register new users with corresponding username and password
@@ -58,7 +58,7 @@ class User:
         if username in users:
             # Block catching problems with files
             messages = self.db.get_user_messages(username)
-            unread_messages = sum(1 for message in messages if messages[message]['read'] == 'False')
+            unread_messages = sum(1 for message in messages if messages[message]['read'] is False)
             if unread_messages > 5:
                 return json.dumps({'message': {'error': "Receiver has too many unread messages"}})
                 

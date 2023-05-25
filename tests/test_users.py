@@ -1,26 +1,16 @@
 import json
 import unittest
-import os
 
+from database.database import ClientServerDatabase
 from users.users import User
 
 class TestUsers(unittest.TestCase):
     def setUp(self):
-        # create a temporary users.json file
-        self.test_users_file = 'test_users.json'
-        with open(self.test_users_file, 'w') as file:
-            json.dump({}, file)
-
-        # create a temporary users_inbox.json file
-        self.test_messages_file = 'test_messages.json'
-        with open(self.test_messages_file, 'w') as file:
-            json.dump({}, file)
-
+        
         # create a new user and initialize fake json files
         self.user = User()
+        self.user.db = ClientServerDatabase('test_database.env')
         
-        self.user.users_file = self.test_users_file
-        self.user.users_inbox_file = self.test_messages_file
 
         self.user_to_login = {'username': 'test1', 'password': 'test'}
 
@@ -31,16 +21,16 @@ class TestUsers(unittest.TestCase):
         self.user.login_user(self.user_to_login['username'], self.user_to_login['password'])
 
     def tearDown(self):
-        # delete the temporary files
-        os.remove(self.test_users_file)
-        os.remove(self.test_messages_file)
+        with self.user.db.db_conn as conn:
+            cursor = conn.cursor()
+            cursor.execute("DROP TABLE users, messages")
+            cursor.close()
 
 
     def test_register_new_user(self):
         user = {'username': 'test_user', 'password': 'pass'}
         self.user.register_user(user['username'], user['password'])
-        with open(self.test_users_file, 'r', encoding='utf-8') as file:
-            users = json.load(file)
+        users = self.user.db.get_list_of_users()
         self.assertIn(user['username'], users)
     
     def test_register_user_with_existing_username(self):
@@ -89,9 +79,9 @@ class TestUsers(unittest.TestCase):
         self.user.send_message('admin', 'Hey', self.user.username)
         self.user.send_message('admin', 'How are you?', self.user.username)
 
-        messages = self.user.open_message_file('admin')
-        self.assertIn('Hey', messages['admin']['1']['body'])
-        self.assertIn('How are you?', messages['admin']['2']['body'])
+        messages = self.user.db.get_user_messages('admin')
+        self.assertIn('Hey', messages['1']['body'])
+        self.assertIn('How are you?', messages['2']['body'])
 
     def test_send_msg_to_non_existing_user(self):
         username = 'non_existing_user'
@@ -118,7 +108,7 @@ class TestUsers(unittest.TestCase):
 
     def test_show_full_inbox_for_logged_user(self):
         self.user.send_message(self.user.username, 'Hey', 'admin')
-        messages = self.user.open_message_file(self.user.username)[self.user.username]
+        messages = self.user.db.get_user_messages(self.user.username)
         response = json.loads(self.user.show_inbox(self.user.username, 'inbox'))['message']['inbox_messages']
         self.assertEqual(messages, response)
 
@@ -132,16 +122,16 @@ class TestUsers(unittest.TestCase):
         self.user.username = 'admin'
         self.user.role = 'admin'
         self.user.send_message(self.user.username, 'Hey', 'admin')
-        messages = self.user.open_message_file(self.user.username)[self.user.username]
+        messages = self.user.db.get_user_messages(self.user.username)
         response = json.loads(self.user.show_inbox(self.user.username, 'inbox'))['message']['inbox_messages']
         self.assertEqual(messages, response)
 
     def test_marking_messages_as_unread(self):
         self.user.send_message(self.user.username, 'Hey', 'admin')
         self.user.send_message(self.user.username, 'Hey2', 'admin')
-        messages = self.user.open_message_file(self.user.username)[self.user.username]
+        messages = self.user.db.get_user_messages('test1')
         self.user.show_inbox('test1', 'inbox')
-        messages_after = self.user.open_message_file(self.user.username)[self.user.username]
+        messages_after = self.user.db.get_user_messages('test1')
         self.assertNotEqual(messages, messages_after)
     
 

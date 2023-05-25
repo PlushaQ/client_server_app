@@ -2,7 +2,7 @@
 This is a client-server application where the client can send a command to the server, and the server returns the appropriate response based on the command.
 ## Installation
 
-    This application requires Python 3 to run. Clone the repository and navigate to the directory in the command line.
+    This application requires Python 3 to run and postgresql installed in your computer. Clone the repository and navigate to the directory in the command line.
 
 ### Starting the server
 

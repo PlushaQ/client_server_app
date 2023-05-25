@@ -3,9 +3,9 @@ from dotenv import dotenv_values
 
 
 class DatabaseConnection:
-    def __init__(self):
+    def __init__(self, host):
         self.connection = None
-        self.host = dotenv_values('database.env')
+        self.host = dotenv_values(host)
 
     def __enter__(self):
         self.connection = psycopg2.connect(**self.host)
