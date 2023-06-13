@@ -16,13 +16,13 @@ class User:
             # Handle the case where user exists
             message = {'message': {'sign up': f'User {username} already exists'}}
 
-            return json.dumps(message, indent=1)
+            return message
         
         self.db.register_new_user(username, password, role)
 
         message = {'message': {'sign up': f'User {username} registered'}}
 
-        return json.dumps(message, indent=4)
+        return message
 
     def login_user(self, username, password):
         # Function logging user
@@ -31,15 +31,15 @@ class User:
         if user and user['password'] == password:
             self.username = username
             self.role = user['role']
-            return json.dumps({'message': {'log in': f'User {username} logged in successfully'}})
+            return {'message': {'log in': f'User {username} logged in successfully'}}
         else:
-            return json.dumps({'message': {'log in': 'User with this username doesn\'t exist or password is incorrect'}})
+            return {'message': {'log in': 'User with this username doesn\'t exist or password is incorrect'}}
     
     def login_required(func):
         @wraps(func)
         def wrapper(self, *args, **kwargs):
             if self.username is None:
-                return json.dumps({'message': {'privileges': 'You need to login to access this!'}})
+                return {'message': {'privileges': 'You need to login to access this!'}}
             return func(self, *args, **kwargs)
         return wrapper
     
@@ -50,7 +50,7 @@ class User:
         users_names = {}
         for index, user in enumerate(users):
             users_names[index + 1] = user
-        return json.dumps({'message': users_names})
+        return {'message': users_names}
     
     @login_required
     def send_message(self, username, message, sender):
@@ -62,7 +62,7 @@ class User:
             messages = self.db.get_user_messages(username)
             unread_messages = sum(1 for message in messages if messages[message]['read'] is False)
             if unread_messages > 5:
-                return json.dumps({'message': {'error': "Receiver has too many unread messages"}})
+                return {'message': {'error': "Receiver has too many unread messages"}}
                 
             # Creating new message 
             time = datetime.now()
@@ -71,9 +71,9 @@ class User:
 
             # Saving new message
             self.db.send_message(username, new_message)
-            return json.dumps({'message': {'Message': f'Message sent to {username} at {time.strftime("%Y-%m-%d %H:%M:%S")}.'}})
+            return {'message': {'Message': f'Message sent to {username} at {time.strftime("%Y-%m-%d %H:%M:%S")}.'}}
         else:
-            return json.dumps({'message': {'error': f'User with username `{username}` doesn\'t exists!'}})
+            return {'message': {'error': f'User with username `{username}` doesn\'t exists!'}}
         
     @login_required
     def show_inbox(self, username, command):
@@ -83,19 +83,19 @@ class User:
                 if command == 'inbox':
                     messages = self.db.get_user_messages(username)
                     if messages == {}:
-                        return json.dumps({'message': {'Empty inbox': 'You don\'t have messages'}})
+                        return {'message': {'Empty inbox': 'You don\'t have messages'}}
                 elif command == 'unread':
                     messages = self.db.get_user_unread_messages(username)
                     if messages == {}:
-                        return json.dumps({'message': {'Empty inbox': 'You don\'t have unread messages'}})
+                        return {'message': {'Empty inbox': 'You don\'t have unread messages'}}
         
             except KeyError:
-                return json.dumps({'message': {'Empty inbox': 'You don\'t have messages'}})
+                return {'message': {'Empty inbox': 'You don\'t have messages'}}
 
             self.db.mark_unread_as_read(username)    
-            return json.dumps({'message': {'inbox_messages': messages}}, indent=1)
+            return {'message': {'inbox_messages': messages}}
         else: 
-            return json.dumps({'message': {'error': 'This isn\'t your inbox!'}})
+            return {'message': {'error': 'This isn\'t your inbox!'}}
 
     
 
