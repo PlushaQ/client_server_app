@@ -2,6 +2,9 @@ from datetime import datetime
 from users.users import User
 
 class ServerResponseHandler:
+    """
+    Class to manage function call to make server code easier to read
+    """
     def __init__(self, date_of_creation) -> None:
         self.server_start_time = date_of_creation
         self.user = User()
@@ -52,6 +55,7 @@ class ServerResponseHandler:
         return {'message': info}
         
     def help(self, command):
+        # Returns a list of commands
         print(f'Sending command list to client ')
         if self.user.username is None:
             return self.available_commands_before_login()
@@ -59,6 +63,7 @@ class ServerResponseHandler:
             return self.available_commands_after_login()
     
     def register(self, command):
+        # Returns info about register and call registering function 
         if len(command) != 3:
             print('Sending usage information to client')
             return {'message': {'Usage': '<register username password>'}}
@@ -68,6 +73,7 @@ class ServerResponseHandler:
             return self.user.register_user(command[1], command[2])
     
     def login(self, command):
+        # Returns info about login and call login function 
         if len(command) != 3:
             print('Sending usage information to client')
             return {'message': {'Usage': '<login username password>'}}
@@ -76,10 +82,12 @@ class ServerResponseHandler:
             return self.user.login_user(command[1], command[2])
             
     def user_list(self, command):
+        # Returns user list 
         print('Sending to client user list')
         return self.user.user_list()
     
     def send(self, command):
+        # Returns info about sending and call send message function
         if len(command) < 3:
             print('Sending usage information to client')
             return {'message': {'Usage': '<send username message>'}}
@@ -88,12 +96,14 @@ class ServerResponseHandler:
             return self.user.send_message(command[1], ' '.join(command[2:]), self.user.username)
 
     def inbox_or_unread(self, command):
+        # Returns inbox or unread inbox 
         if len(command) != 2:
             command.append(self.user.username)
             print(f'Showing {command[1]} inbox.')
             return self.user.show_inbox(command[1], command[0])
 
     def handle_commands(self, command):
+        # Main function to call other functions 
         functions = {
             'uptime': self.uptime,
             'info': self.info,
