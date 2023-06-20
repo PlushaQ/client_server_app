@@ -1,24 +1,35 @@
 # simple_client_server_app
 This is a client-server application where the client can send a command to the server, and the server returns the appropriate response based on the command.
+
+## Description
+    This application allows clients to interact with a server by sending commands and receiving corresponding responses. The server handles these commands and provides the requested information or performs the requested actions.
+
+    Please note that the current version of the application only supports a single client connection. However, a multi-user version is currently under development and will be available soon.    
+
 ## Installation
 
-    This application requires Python 3 to run and postgresql installed in your computer. Clone the repository and navigate to the directory in the command line.
+    To run this application, you need to have Python 3 installed on your computer, as well as PostgreSQL for the upcoming multi-user version. Follow the steps below to install and set up the application:
+
+    Clone the repository to your local machine.
+
+    Navigate to the repository directory using the command line.
+    
 
 ### Starting the server
 
-    To start the server, run the following command in the command line:
+To start the server, run the following command in the command line:
 
     python server.py
 
-    By default, the server will listen on 127.0.0.1:64321.
+By default, the server will listen on 127.0.0.1:64321.
 
 ### Starting the client
 
-    To start the client, run the following command in a separate command line window:
+To start the client, run the following command in a separate command line window:
 
     python client.py
 
-    The client will connect to the server and display a list of available commands. Enter a command to receive a response from the server.
+The client will connect to the server and display a list of available commands. Enter a command to receive a response from the server.
 
 The available commands before login are:
 
