@@ -46,4 +46,12 @@ The available commands after login are expanded to:
     'unread': 'shows unread messages from users inbox. usage <unread username>',
     'inbox': 'shows users inbox. usage: <inbox username>',
     'user_list': 'shows users in the server'  
-  
+
+### Database Setup (Multi-User Version - Coming Soon)
+
+The upcoming multi-user version of the application will require PostgreSQL for database functionality. Detailed instructions for setting up the database will be provided in the updated README once the multi-user version is released.
+
+### License
+This project is licensed under the MIT License.
+
+The MIT License is a permissive open-source license that allows you to freely use, modify, and distribute the code in this repository. It comes with minimal restrictions and provides maximum flexibility for developers and users of the software.
