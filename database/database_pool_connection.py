@@ -22,23 +22,26 @@ class DatabaseConnectionPoolManager:
     def start_new_connection(self):
         with self.semaphore:
             inactive_conns = [conn for conn in self.connections if conn.active is False]
-            if len(inactive_conns) == 0 and len(self.connections) >= self.max_connections:
-                print("Reached maximum connections. Please try again later")
-            elif len(inactive_conns) == 0:
+            if len(inactive_conns) == 0:
                 new_conn = DatabaseConnection(self.db_info, len(self.connections)).conn_info()
                 new_conn.active = True
                 self.connections.append(new_conn)
                 print(f"Connected to database. Connection id = {new_conn.connection_id}")
                 return new_conn
-            else:
-                new_conn = inactive_conns[0]
-                new_conn.active = True
-                print(f"Connected to database. Connection id = {new_conn.connection_id}")
-                return new_conn
+            if len(self.connections) >= self.max_connections:
+                print("Reached maximum connections. Please try again later")
+                return None
+
+            new_conn = inactive_conns[0]
+            new_conn.active = True
+            print(f"Connected to database. Connection id = {new_conn.connection_id}")
+            return new_conn
 
     def return_connection_to_pool(self, conn):
         with self.semaphore:
             conn.active = False
+            if conn.connection_id < 5:
+                self.connections.remove(conn)
 
     def close_all_connections(self):
         with self.semaphore:
@@ -52,12 +55,11 @@ class DatabaseConnectionPoolManager:
                 inactive_conns = [conn for conn in self.connections if conn.active is False]
                 if len(inactive_conns) > 0:
                     for conn in inactive_conns:
-                        if conn.connection_id < 5:
+                        print(conn.connection_id )
+                        if conn.connection_id > 4:
                             self.connections.remove(conn)
                 print(f"""
 Conns: {len(self.connections)}
 Time from start: {round(time.time() - self.initialization_time, 2)}
 """)
                 time.sleep(2)
-
-

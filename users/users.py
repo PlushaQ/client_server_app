@@ -32,6 +32,7 @@ class User:
         if user and user['password'] == password:
             self.username = username
             self.role = user['role']
+
             return {'message': {'log in': f'User {username} logged in successfully'}}
         else:
             return {'message': {'log in': 'User with this username doesn\'t exist or password is incorrect'}}

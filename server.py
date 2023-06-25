@@ -1,9 +1,36 @@
 import socket
 import json
 import datetime
+import threading
 
-from users.users import User
+
 from utils.server_command_handler import ServerResponseHandler
+
+
+class ClientThread(threading.Thread):
+    def __init__(self, conn, address, handler):
+        threading.Thread.__init__(self)
+        self.conn = conn
+        self.address = address
+        self.handler = handler
+
+    def run(self):
+        print(f'Connected by {self.address}')
+        while True:
+            msg = self.conn.recv(1024).decode('utf8')
+            if not msg:
+                break
+
+            msg = json.loads(msg)
+            command = msg['command'].split()
+
+            if command and command[0] == 'stop':
+                self.conn.send(json.dumps({'message': 'stop'}).encode('utf-8'))
+                print(f'Shutting down a server')
+                self.conn.close()
+                break
+            else:
+                self.conn.send(json.dumps(self.handler.handle_commands(command), indent=4).encode('utf-8'))
 
 
 class Server:
@@ -18,27 +45,13 @@ class Server:
 
     def run(self):
         # Accept incoming connections
-        conn, addr = self.socket.accept()
-        print(f'Connected by {addr}')
         
         while True:
-            # Receive command from the client
-            msg = conn.recv(1024).decode('utf8')
-            if not msg:
-                break
-            
-            msg = json.loads(msg)
-            command = msg['command'].split()
-            
+            conn, addr = self.socket.accept()
 
-            if command and command[0] == 'stop':
-                conn.send(json.dumps({'message': 'stop'}).encode('utf-8'))
-                print(f'Shutting down a server')
-                self.socket.close()
-                break
-            
-            else:
-                conn.send(json.dumps(self.handler.handle_commands(command), indent=4).encode('utf-8'))
+            # Create new thread for each client
+            client_thread = ClientThread(conn, addr, self.handler)
+            client_thread.start()
 
 
 if __name__ == '__main__':

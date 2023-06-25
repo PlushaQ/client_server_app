@@ -29,7 +29,7 @@ Commands availible:
             return_msg = self.socket.recv(1024).decode('utf-8')
             return_msg = json.loads(return_msg)
             if return_msg['message'] == 'stop':
-                 # If the server responds with 'stop', it means it is shutting down
+                # If the server responds with 'stop', it means it is shutting down
                 print('Server is shutting down!')
                 self.socket.close()
                 break
