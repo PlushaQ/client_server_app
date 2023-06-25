@@ -1,10 +1,12 @@
-from .database_connection import DatabaseConnectionContextManager
+from .database_pool_connection import DatabaseConnectionPoolManager
 
 
 class ClientServerDatabase:
     def __init__(self, database):
         # Initialize the ClientServerDatabase object
-        self.db_conn = DatabaseConnectionContextManager(database) # Create a DatabaseConnection object with the specified database
+        self.db_conn_pool = DatabaseConnectionPoolManager(
+            database)  # Create a DatabaseConnection object with the specified database
+        self.db_conn = self.db_conn_pool.start_new_connection()
         with self.db_conn as connection:
             cursor = connection.cursor()
 
@@ -14,7 +16,7 @@ class ClientServerDatabase:
                             password VARCHAR(255),
                             role VARCHAR(5)
                             );''')
-            
+
             # Create the 'messages' table if it doesn't exist
             cursor.execute('''CREATE TABLE IF NOT EXISTS messages (
                             username VARCHAR(255) REFERENCES users (username),
@@ -38,7 +40,7 @@ class ClientServerDatabase:
 
             cursor.close()
             return users
-    
+
     def get_user_info(self, username):
         # Retrieve information about a user from the 'users' table
         with self.db_conn as conn:
@@ -52,10 +54,10 @@ class ClientServerDatabase:
             except TypeError:
                 cursor.close()
                 return False
-            
-            cursor.close()    
+
+            cursor.close()
             return user
-        
+
     def register_new_user(self, username, password, role):
         # Register a new user in the 'users' table
         with self.db_conn as conn:
@@ -67,51 +69,54 @@ class ClientServerDatabase:
         # Retrieve messages for a specific user from the 'messages' table
         with self.db_conn as conn:
             cursor = conn.cursor()
-            cursor.execute('SELECT message_id, sender, time, body, is_read FROM messages WHERE username = %s', (username,))
+            cursor.execute('SELECT message_id, sender, time, body, is_read FROM messages WHERE username = %s',
+                           (username,))
             messages = cursor.fetchall()
             messages = {
                 str(message[0]): {
-                 'sender': message[1],
-                 'time': message[2].strftime('%Y-%m-%d %H:%M:%S'),
-                 'body': message[3],
-                 'read': message[4]}
-                  for message in messages}
+                    'sender': message[1],
+                    'time': message[2].strftime('%Y-%m-%d %H:%M:%S'),
+                    'body': message[3],
+                    'read': message[4]}
+                for message in messages}
             cursor.close()
             return messages
-    
+
     def send_message(self, receiver, new_message):
         # Insert a new message into the 'messages' table
         with self.db_conn as conn:
             cursor = conn.cursor()
             cursor.execute('INSERT INTO messages VALUES (%s, %s, %s, %s, %s, %s)',
-                            (receiver,
-                             new_message['message_id'],
-                             new_message['sender'],
-                             new_message['time'],
-                             new_message['body'],
-                             new_message['read']))
+                           (receiver,
+                            new_message['message_id'],
+                            new_message['sender'],
+                            new_message['time'],
+                            new_message['body'],
+                            new_message['read']))
             cursor.close()
-    
+
     def get_user_unread_messages(self, username):
         # Retrieve unread messages for a specific user from the 'messages' table
         with self.db_conn as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT message_id, sender, time, body, is_read FROM messages WHERE username = %s AND is_read = 'f'" , (username,))
+            cursor.execute(
+                "SELECT message_id, sender, time, body, is_read FROM messages WHERE username = %s AND is_read = 'f'",
+                (username,))
             messages = cursor.fetchall()
             messages = {
                 str(message[0]): {
-                 'sender': message[1],
-                 'time': message[2].strftime('%Y-%m-%d %H:%M:%S'),
-                 'body': message[3],
-                 'read': message[4]}
-                  for message in messages}
+                    'sender': message[1],
+                    'time': message[2].strftime('%Y-%m-%d %H:%M:%S'),
+                    'body': message[3],
+                    'read': message[4]}
+                for message in messages
+            }
             cursor.close()
             return messages
-        
+
     def mark_unread_as_read(self, username):
         # Mark unread messages as read for a specific user in the 'messages' table
         with self.db_conn as conn:
             cursor = conn.cursor()
-            cursor.execute("UPDATE messages SET is_read = True WHERE username = %s", (username, ))
+            cursor.execute("UPDATE messages SET is_read = True WHERE username = %s", (username,))
             cursor.close()
-

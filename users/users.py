@@ -3,6 +3,7 @@ from functools import wraps
 from datetime import datetime
 from database.database import ClientServerDatabase
 
+
 class User:
     def __init__(self) -> None:
         self.username = None
