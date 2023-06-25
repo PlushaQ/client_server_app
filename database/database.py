@@ -1,10 +1,10 @@
-from .database_connection import DatabaseConnection
+from .database_connection import DatabaseConnectionContextManager
 
 
 class ClientServerDatabase:
     def __init__(self, database):
         # Initialize the ClientServerDatabase object
-        self.db_conn = DatabaseConnection(database) # Create a DatabaseConnection object with the specified database
+        self.db_conn = DatabaseConnectionContextManager(database) # Create a DatabaseConnection object with the specified database
         with self.db_conn as connection:
             cursor = connection.cursor()
 
