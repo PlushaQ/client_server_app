@@ -27,16 +27,19 @@ class DatabaseConnectionContextManager:
 class DatabaseConnection:
     def __init__(self, db_info, connection_id=0):
         self.connection = None
-        self.host = dotenv_values(db_info)
+        self.db_info = dotenv_values(db_info)
         self.active = False
         self.connection_id = connection_id
 
-    def connect(self):
+    def __repr__(self):
+        return f'<Connection ID {self.connection_id}. Active: {self.active}>'
+
+    def _connect(self):
         try:
             self.connection = psycopg2.connect(**self.db_info)
         except psycopg2.Error:
             print("Error occurred while connecting to database. Please check configurations and try again.")
-        else:
-            return self.connection
 
-
+    def conn_info(self):
+        self._connect()
+        return self
