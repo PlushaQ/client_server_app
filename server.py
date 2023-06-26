@@ -3,7 +3,7 @@ import json
 import datetime
 import threading
 
-
+from database.database import ClientServerDatabase
 from utils.server_command_handler import ServerResponseHandler
 
 
@@ -16,6 +16,7 @@ class ClientThread(threading.Thread):
 
     def run(self):
         print(f'Connected by {self.address}')
+
         while True:
             msg = self.conn.recv(1024).decode('utf8')
             if not msg:
@@ -41,11 +42,11 @@ class Server:
         self.socket.bind(self.address)
         self.socket.listen()
         print(f"Listening on {self.address}")
+        self.db = ClientServerDatabase('database.env')
         self.handler = ServerResponseHandler(self.server_start_time)
 
     def run(self):
         # Accept incoming connections
-        
         while True:
             conn, addr = self.socket.accept()
 

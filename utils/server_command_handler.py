@@ -1,6 +1,7 @@
 from datetime import datetime
 from users.users import User
 
+
 class ServerResponseHandler:
     """
     Class to manage function call to make server code easier to read
@@ -8,7 +9,6 @@ class ServerResponseHandler:
     def __init__(self, date_of_creation) -> None:
         self.server_start_time = date_of_creation
         self.user = User()
-
 
     def available_commands_before_login(self):
         # Returns a dictionary of available commands before user login.

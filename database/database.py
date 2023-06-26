@@ -1,12 +1,15 @@
 from .database_pool_connection import DatabaseConnectionPoolManager
+from .database_connection import DatabaseContextManager
 
 
 class ClientServerDatabase:
+    db = None
+
     def __init__(self, database):
         # Initialize the ClientServerDatabase object
         self.db_conn_pool = DatabaseConnectionPoolManager(
             database)  # Create a DatabaseConnection object with the specified database
-        self.db_conn = self.db_conn_pool.start_new_connection()
+        self.db_conn = DatabaseContextManager(self.db_conn_pool)
         with self.db_conn as connection:
             cursor = connection.cursor()
 
@@ -28,6 +31,11 @@ class ClientServerDatabase:
                             PRIMARY KEY (username, message_id)
             );''')
             cursor.close()
+
+        ClientServerDatabase.db = self
+
+    def close_connections(self):
+        self.db_conn_pool.close_all_connections()
 
     def get_list_of_users(self):
         # Retrieve a list of usernames from the 'users' table

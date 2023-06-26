@@ -8,8 +8,8 @@ class User:
     def __init__(self) -> None:
         self.username = None
         self.role = None
-        self.db = ClientServerDatabase('database.env')
-   
+        self.db = ClientServerDatabase.db
+
     def register_user(self, username, password, role='user'):
         # Function to register new users with corresponding username and password
         users = self.db.get_list_of_users()
