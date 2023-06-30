@@ -1,14 +1,16 @@
 from .database_pool_connection import DatabaseConnectionPoolManager
 from .database_connection import DatabaseContextManager
-
+from random import randint
+import time
 
 class ClientServerDatabase:
     db = None
 
-    def __init__(self, database):
+    def __init__(self, database, time_limit='x'):
         # Initialize the ClientServerDatabase object
+
         self.db_conn_pool = DatabaseConnectionPoolManager(
-            database)  # Create a DatabaseConnection object with the specified database
+            database, time_limit)  # Create a DatabaseConnection object with the specified database
         self.db_conn = DatabaseContextManager(self.db_conn_pool)
         with self.db_conn as connection:
             cursor = connection.cursor()
@@ -47,6 +49,7 @@ class ClientServerDatabase:
             users = [row[0] for row in users]
 
             cursor.close()
+            time.sleep(randint(0,2))
             return users
 
     def get_user_info(self, username):
