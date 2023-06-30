@@ -47,7 +47,7 @@ class DatabaseConnectionPoolManager:
 
     def return_connection_to_pool(self, conn):
         with self.semaphore:
-            conn = [x for x in self.connections if x == conn]
+            conn = [x for x in self.connections if x is conn]
             if conn:
                 conn[0].active = False
                 self.connections_realised += 1
@@ -63,11 +63,16 @@ class DatabaseConnectionPoolManager:
     def _connection_loop(self):
         while self.run:
             with self.semaphore:
-                inactive_conns = [conn for conn in self.connections if conn.active is False]
+                inactive_conns = [conn for conn in self.connections if not conn.active]
+                connections_to_remove = []
                 for conn in inactive_conns:
+                    print('realising')
                     if conn.connection_id > 4:
                         conn.connection.close()
-                        self.connections.remove(conn)
+                        connections_to_remove.append(conn)
+
+                for conn in connections_to_remove:
+                    self.connections.remove(conn)
 
             print(f"""Time from start: {round(time.time() - self.initialization_time, 2)}
 Realised connections: {self.connections_realised}

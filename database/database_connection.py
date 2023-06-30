@@ -31,9 +31,6 @@ class DatabaseContextManager:
 
     def __enter__(self):
         self.connection = self.pool.start_new_connection()
-        while self.connection is None:
-            time.sleep(2)
-            self.connection = self.pool.start_new_connection()
         return self.connection.connection
 
     def __exit__(self, exc_type, exc_val, exc_tb):

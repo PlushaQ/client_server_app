@@ -1,7 +1,7 @@
 from .database_pool_connection import DatabaseConnectionPoolManager
 from .database_connection import DatabaseContextManager
 from random import randint
-import time
+
 
 class ClientServerDatabase:
     db = None
@@ -49,7 +49,6 @@ class ClientServerDatabase:
             users = [row[0] for row in users]
 
             cursor.close()
-            time.sleep(randint(0,2))
             return users
 
     def get_user_info(self, username):
