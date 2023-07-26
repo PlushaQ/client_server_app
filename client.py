@@ -11,7 +11,7 @@ class Client:
     def manage_connection(self):
         # Print available commands for the user
         print("""
-Commands availible:
+Commands available:
 - help
 - info
 - uptime

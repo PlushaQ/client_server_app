@@ -1,4 +1,3 @@
-import json
 from functools import wraps
 from datetime import datetime
 from database.database import ClientServerDatabase
@@ -42,7 +41,8 @@ class User:
         def wrapper(self, *args, **kwargs):
             if self.username is None:
                 return {'message': {'privileges': 'You need to login to access this!'}}
-            return func(self, *args, **kwargs)
+            return func
+
         return wrapper
     
     @login_required
@@ -68,10 +68,14 @@ class User:
                 
             # Creating new message 
             time = datetime.now()
-            new_message = {'message_id': len(messages) + 1, 'sender': sender, 'time': time, 'body': message, 'read': 'no'}
+            new_message = {
+                'message_id': len(messages) + 1,
+                'sender': sender,
+                'time': time,
+                'body': message,
+                'read': 'no'}
 
-
-            # Saving new message
+        # Saving new message
             self.db.send_message(username, new_message)
             return {'message': {'Message': f'Message sent to {username} at {time.strftime("%Y-%m-%d %H:%M:%S")}.'}}
         else:

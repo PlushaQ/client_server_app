@@ -1,7 +1,6 @@
 import threading
 import time
 
-
 from .database_connection import DatabaseConnection
 
 
@@ -27,23 +26,21 @@ class DatabaseConnectionPoolManager:
         self.thread.start()
 
     def start_new_connection(self):
-
         inactive_conns = [conn for conn in self.connections if conn.active is False]
-        print(len(inactive_conns))
-        if len(self.connections) >= self.max_connections and len(inactive_conns) == 0:
+        while len(self.connections) >= self.max_connections and len(inactive_conns) == 0:
             # print("Reached maximum connections. Please try again later")
-            return None
+            time.sleep(0.01)
         if len(inactive_conns) == 0:
             with self.semaphore:
                 new_conn = DatabaseConnection(self.db_info, len(self.connections)).conn_info()
                 new_conn.active = True
                 self.connections.append(new_conn)
-                # print(f"Connected to database. Connection id = {new_conn.connection_id}")
+                print(f"Connected to database. Connection id = {new_conn.connection_id}")
                 return new_conn
         with self.semaphore:
             new_conn = inactive_conns[0]
             new_conn.active = True
-            # print(f"Connected to database. Connection id = {new_conn.connection_id}")
+            print(f"Connected to database. Connection id = {new_conn.connection_id}")
             return new_conn
 
     def return_connection_to_pool(self, conn):
@@ -52,7 +49,7 @@ class DatabaseConnectionPoolManager:
             if conn:
                 conn[0].active = False
                 self.connections_realised += 1
-                # print(f"Released connection ID: {conn[0].connection_id}")
+                print(f'realised {str(conn)}')
 
     def close_all_connections(self):
         with self.semaphore:
@@ -67,7 +64,6 @@ class DatabaseConnectionPoolManager:
                 inactive_conns = [conn for conn in self.connections if not conn.active]
                 connections_to_remove = []
                 for conn in inactive_conns:
-                    print('realising')
                     if conn.connection_id > 4:
                         conn.connection.close()
                         connections_to_remove.append(conn)

@@ -6,7 +6,6 @@ from server import Server
 from users.users import User
 
 
-
 class TestServer(unittest.TestCase):
     def setUp(self) -> None:
         self.host = '127.0.0.1'
@@ -37,7 +36,7 @@ class TestServer(unittest.TestCase):
             'register': 'registers new users. usage: <register username password>',
             'login': 'log in user. usage: <login username password>'
         }}
-        self.assertEqual(self.server.available_commands_before_login(), expected_return)
+        self.assertEqual(self.server.handler.available_commands_before_login(), expected_return)
 
     def test_available_commands_after_login(self):
         # Test the available_commands_after_login method
@@ -54,16 +53,16 @@ class TestServer(unittest.TestCase):
             'inbox': 'shows users inbox. usage: <inbox username>',
             'user_list': 'shows users in the server'  
         }}
-        self.assertEqual(self.server.available_commands_after_login(), expected_return)
+        self.assertEqual(self.server.handler.available_commands_after_login(), expected_return)
         
     def test_uptime(self):
         # Test the uptime property
-        uptime_str = self.server.uptime['message']['uptime']
+        uptime_str = self.server.handler.uptime['message']['uptime']
         self.assertRegex(uptime_str, r'^[0-9]+:[0-9]+:[0-9]+\.[0-9]{6}$')
 
     def test_info(self):
         # Test the info property
-        info_dict = self.server.info['message']
+        info_dict = self.server.handler.info['message']
         self.assertRegex(info_dict['Version'], r'^[0-9]+.[0-9]+.[0-9]+$')
         self.assertEqual(info_dict['Creation_date'], str(self.server.server_start_time))
 

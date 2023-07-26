@@ -10,7 +10,8 @@ class ServerResponseHandler:
         self.server_start_time = date_of_creation
         self.user = User()
 
-    def available_commands_before_login(self):
+    @staticmethod
+    def available_commands_before_login():
         # Returns a dictionary of available commands before user login.
         commands = {
             'uptime': "returns the uptime of the server",
@@ -23,7 +24,8 @@ class ServerResponseHandler:
         }
         return {'message': commands}
 
-    def available_commands_after_login(self):
+    @staticmethod
+    def available_commands_after_login():
         # Returns a dictionary of available commands after user login.
         commands = {
             'uptime': "returns the uptime of the server",

@@ -4,6 +4,7 @@ import unittest
 from database.database import ClientServerDatabase
 from users.users import User
 
+
 class TestUsers(unittest.TestCase):
     def setUp(self):
         
@@ -27,7 +28,6 @@ class TestUsers(unittest.TestCase):
             cursor = conn.cursor()
             cursor.execute("DROP TABLE users, messages")
             cursor.close()
-
 
     def test_register_new_user(self):
         # Test registering a new user
@@ -63,7 +63,8 @@ class TestUsers(unittest.TestCase):
         self.user.role = None
         user = {'username': 'test2', 'password': 'test'}
         msg = self.user.login_user(user['username'], user['password'])
-        expected_output = json.dumps({'message': {'log in': 'User with this username doesn\'t exist or password is incorrect'}})
+        expected_output = json.dumps(
+            {'message': {'log in': 'User with this username doesn\'t exist or password is incorrect'}})
         
         self.assertEqual(msg, expected_output)
         self.assertIsNone(self.user.username)
@@ -76,10 +77,9 @@ class TestUsers(unittest.TestCase):
         expected_output = json.dumps({'message': {'privileges': 'You need to login to access this!'}})
         self.assertEqual(msg, expected_output)
 
-
     def test_display_user_list_with_login(self):
         # Test displaying the user list after logging in
-        expected_output = json.dumps({'message': {1: 'test1', 2:'admin'}})
+        expected_output = json.dumps({'message': {1: 'test1', 2: 'admin'}})
         msg = self.user.user_list()
         self.assertEqual(msg, expected_output)
 
