@@ -29,6 +29,7 @@ class DatabaseConnectionPoolManager:
     def start_new_connection(self):
 
         inactive_conns = [conn for conn in self.connections if conn.active is False]
+        print(len(inactive_conns))
         if len(self.connections) >= self.max_connections and len(inactive_conns) == 0:
             # print("Reached maximum connections. Please try again later")
             return None

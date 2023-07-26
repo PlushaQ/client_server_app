@@ -30,12 +30,14 @@ class DatabaseContextManager:
         self.connection = None
 
     def __enter__(self):
+        self.pool.semaphore.acquire()
         self.connection = self.pool.start_new_connection()
         return self.connection.connection
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.connection.connection.commit()
         self.pool.return_connection_to_pool(self.connection)
+        self.pool.semaphore.release()
 
 # The DatabaseConnection class is a context manager that provides a convenient way to handle database connections.
 # It allows you to establish a connection to a PostgreSQL database and automatically handles cleanup operations,
