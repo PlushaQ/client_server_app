@@ -19,17 +19,11 @@ if __name__ == '__main__':
     #     stress_test()
     while db.db_conn_pool.run:
         thread = threading.Thread(target=stress_test)
-        time.sleep(0.02)
         threads.append(thread)
         thread.start()
 
-    print(len(threads))
-    count = 0
     for thread in threads:
-
-        print(len(threads) - count)
         thread.join()
-        count += 1
 
     end_time = time.time() - start_time
     print(end_time)
