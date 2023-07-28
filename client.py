@@ -55,6 +55,6 @@ Commands available:
                 
 if __name__ == '__main__':
     # Create a client object and connect to the server
-    client = Client('127.0.0.1', 64322)
+    client = Client('127.0.0.1', 64321)
     # Start managing the connection with the server
     client.manage_connection()

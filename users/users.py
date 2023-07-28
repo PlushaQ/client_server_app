@@ -7,7 +7,7 @@ class User:
     def __init__(self) -> None:
         self.username = None
         self.role = None
-        self.db = ClientServerDatabase.db
+        self.db = ClientServerDatabase.actual_session
 
     def register_user(self, username, password, role='user'):
         # Function to register new users with corresponding username and password
@@ -21,17 +21,17 @@ class User:
         self.db.register_new_user(username, password, role)
 
         message = {'message': {'sign up': f'User {username} registered'}}
-
+        print('User registered')
         return message
 
     def login_user(self, username, password):
         # Function logging user
         user = self.db.get_user_info(username)
-
         if user and user['password'] == password:
             self.username = username
             self.role = user['role']
 
+            print(f"Logged {self.username} with role {self.role}")
             return {'message': {'log in': f'User {username} logged in successfully'}}
         else:
             return {'message': {'log in': 'User with this username doesn\'t exist or password is incorrect'}}
@@ -41,7 +41,7 @@ class User:
         def wrapper(self, *args, **kwargs):
             if self.username is None:
                 return {'message': {'privileges': 'You need to login to access this!'}}
-            return func
+            return func(self, *args, **kwargs)
 
         return wrapper
     
@@ -102,6 +102,3 @@ class User:
             return {'message': {'inbox_messages': messages}}
         else: 
             return {'message': {'error': 'This isn\'t your inbox!'}}
-
-    
-

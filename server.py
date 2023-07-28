@@ -31,7 +31,10 @@ class ClientThread(threading.Thread):
                 self.conn.close()
                 break
             else:
-                self.conn.send(json.dumps(self.handler.handle_commands(command), indent=4).encode('utf-8'))
+                self.conn.send(
+                    json.dumps(
+                        self.handler.handle_commands(command),
+                        indent=4).encode('utf-8'))
 
 
 class Server:
@@ -49,6 +52,7 @@ class Server:
         # Accept incoming connections
         while True:
             conn, addr = self.socket.accept()
+            print(conn, addr)
 
             # Create new thread for each client
             client_thread = ClientThread(conn, addr, self.handler)
@@ -56,5 +60,5 @@ class Server:
 
 
 if __name__ == '__main__':
-    server = Server('127.0.0.1', 64322)
+    server = Server('127.0.0.1', 64321)
     server.run()

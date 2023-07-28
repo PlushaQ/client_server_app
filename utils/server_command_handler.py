@@ -71,7 +71,6 @@ class ServerResponseHandler:
             return {'message': {'Usage': '<register username password>'}}
             
         else:
-            print('User registered')
             return self.user.register_user(command[1], command[2])
     
     def login(self, command):
@@ -80,7 +79,6 @@ class ServerResponseHandler:
             print('Sending usage information to client')
             return {'message': {'Usage': '<login username password>'}}
         else:
-            print(f"Logged {self.user.username} with role {self.user.role}")
             return self.user.login_user(command[1], command[2])
             
     def user_list(self, command):

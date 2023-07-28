@@ -49,7 +49,6 @@ class DatabaseConnectionPoolManager:
                 conn[0].active = False
                 self.connections_realised += 1
 
-
     def close_all_connections(self):
         with self.semaphore:
             self.run = False
@@ -72,7 +71,7 @@ Active connections: {len(self.connections)}
 Connections: {','.join([str(x.connection_id) for x in self.connections])}
 """)
 
-            time.sleep(1)
+            time.sleep(10)
 
             if self.time_limit:
                 self.working_time = time.time() - self.initialization_time

@@ -1,6 +1,5 @@
 import psycopg2
 from dotenv import dotenv_values
-import time
 
 
 class DatabaseConnection:
@@ -29,12 +28,21 @@ class DatabaseConnection:
 #     def __init__(self, pool):
 #         self.pool = pool
 #         self.connection = None
+#         self.cursor = None
+#
+#     def _get_conn(self):
+#         return self.pool.start_new_connection()
 #
 #     def __enter__(self):
-#         self.connection = self.pool.start_new_connection()
-#         return self.connection.connection
+#         self.connection = self._get_conn()
+#         if self.connection is None:
+#             time.sleep(2)
+#             return self._get_conn()
+#         self.cursor = self.connection.cursor()
+#         return self.connection, self.cursor
 #
 #     def __exit__(self, exc_type, exc_val, exc_tb):
-#         self.connection.connection.commit()
+#         self.cursor.close()
+#         self.connection.commit()
 #         self.pool.return_connection_to_pool(self.connection)
-
+#
