@@ -26,7 +26,10 @@ class ClientServerDatabase:
             if conn is None:
                 time.sleep(2)
                 return self.db_query(sql_query, params)
-            else:
+        except Exception as e:
+            print(f'Exception during getting connection: {e}')
+        else:
+            try:
                 cursor = conn.cursor()
                 cursor.execute(sql_query, params)
                 if sql_query.split()[0] == 'SELECT':
@@ -35,13 +38,11 @@ class ClientServerDatabase:
                     data = None
                 cursor.close()
                 self.db_conn_pool.return_connection_to_pool(conn)
-
+            except Exception as e:
+                print(f'Exception during getting making query: {e}')
+                self.db_conn_pool.return_connection_to_pool(conn)
+            else:
                 return data
-
-        except Exception as e:
-            print(e)
-            cursor.close()
-            self.db_conn_pool.return_connection_to_pool(conn)
 
     def create_db_if_not_exist(self):
         # Create the 'users' table if it doesn't exist
