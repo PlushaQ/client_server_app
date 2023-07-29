@@ -5,11 +5,11 @@ import time
 class ClientServerDatabase:
     actual_session = None
 
-    def __init__(self, database):
+    def __init__(self, database, time_limit=None):
         # Initialize the ClientServerDatabase object
 
         self.db_conn_pool = DatabaseConnectionPoolManager(
-            database)  # Create a DatabaseConnection object with the specified database
+            database, time_limit)  # Create a DatabaseConnection object with the specified database
 
         # Create DB if it's empty
         self.create_db_if_not_exist()

@@ -5,7 +5,7 @@ from .database_connection import DatabaseConnection
 
 
 class DatabaseConnectionPoolManager:
-    def __init__(self, database_info, time_limit=None):
+    def __init__(self, database_info, time_limit):
         self.db_info = database_info
         self.starting_conns = 5
         self.max_connections = 50
@@ -71,7 +71,7 @@ Active connections: {len(self.connections)}
 Connections: {','.join([str(x.connection_id) for x in self.connections])}
 """)
 
-            time.sleep(10)
+            time.sleep(1)
 
             if self.time_limit:
                 self.working_time = time.time() - self.initialization_time
