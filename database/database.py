@@ -28,6 +28,7 @@ class ClientServerDatabase:
                 return self.db_query(sql_query, params)
         except Exception as e:
             print(f'Exception during getting connection: {e}')
+            self.db_conn_pool.return_connection_to_pool(conn)
         else:
             try:
                 cursor = conn.cursor()

@@ -69,11 +69,12 @@ class Server:
 
     def stop(self):
         # Close all client threads gracefully
+        self.db.db_conn_pool.run = False
         self.server_run = False
         for thread in self.client_threads:
             thread.join()  # Wait for each thread to finish
-        self.socket.close()
         self.db.close_connections()
+        self.socket.close()
 
 
 if __name__ == '__main__':

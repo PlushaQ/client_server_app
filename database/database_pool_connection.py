@@ -23,30 +23,39 @@ class DatabaseConnectionPoolManager:
         self.semaphore = threading.Semaphore(self.max_connections)
 
         self.thread = threading.Thread(target=self._connection_loop)
+        self.thread.daemon = True
         self.thread.start()
 
     def start_new_connection(self):
-        inactive_conns = [conn for conn in self.connections if conn.active is False]
-        if len(self.connections) >= self.max_connections and len(inactive_conns) == 0:
-            return None
-        if len(inactive_conns) == 0:
-            with self.semaphore:
+        inactive_conn = None
+        with self.semaphore:
+            for conn in self.connections:
+                if not conn.active:
+                    inactive_conn = conn
+                    break
+            if not inactive_conn and len(self.connections) >= self.max_connections:
+                return None
+
+            if not inactive_conn:
                 new_conn = DatabaseConnection(self.db_info).conn_info()
                 new_conn.active = True
                 self.connections.append(new_conn)
-
                 return new_conn.connection
-        with self.semaphore:
-            new_conn = inactive_conns[0]
+
+            new_conn = inactive_conn
             new_conn.active = True
 
             return new_conn.connection
 
-    def return_connection_to_pool(self, conn):
-        conn = [x for x in self.connections if x.connection is conn]
-        if conn:
-            with self.semaphore:
-                conn[0].active = False
+    def return_connection_to_pool(self, connection):
+        conn = None
+        with self.semaphore:
+            for conn_info in self.connections:
+                if conn_info.connection is connection:
+                    conn = conn_info
+                    break
+            if conn:
+                conn.active = False
                 self.connections_realised += 1
 
     def close_all_connections(self):
@@ -58,17 +67,16 @@ class DatabaseConnectionPoolManager:
 
     def _connection_loop(self):
         while self.run:
-            inactive_conns = [conn for conn in self.connections if not conn.active]
-            connections_to_remove = inactive_conns[4:]
             with self.semaphore:
+                inactive_conns = [conn for conn in self.connections if not conn.active]
+                connections_to_remove = inactive_conns[5:]
                 for conn in connections_to_remove:
                     conn.connection.close()
                     self.connections.remove(conn)
 
-            print(f"""Time from start: {round(time.time() - self.initialization_time, 2)}
+                print(f"""Time from start: {round(time.time() - self.initialization_time, 2)}
 Realised connections: {self.connections_realised}
 Active connections: {len(self.connections)}
-Connections: {','.join([str(x.connection_id) for x in self.connections])}
 """)
 
             time.sleep(1)
