@@ -79,7 +79,7 @@ Realised connections: {self.connections_realised}
 Active connections: {len(self.connections)}
 """)
 
-            time.sleep(60)
+            time.sleep(1)
 
             if self.time_limit:
                 self.working_time = time.time() - self.initialization_time
