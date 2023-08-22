@@ -91,9 +91,12 @@ class ServerResponseHandler:
         if len(command) < 3:
             print('Sending usage information to client')
             return {'message': {'Usage': '<send username message>'}}
+        message_body = ' '.join(command[2:])
+        if len(message_body) > 255:
+            return {'message': {'Limit': 'Message is too long!'}}
         else:
             print(f'Sending messages from {self.user.username} to {command[1]}')
-            return self.user.send_message(command[1], ' '.join(command[2:]), self.user.username)
+            return self.user.send_message(command[1], message_body, self.user.username)
 
     def inbox_or_unread(self, command):
         # Returns inbox or unread inbox 
@@ -112,7 +115,8 @@ class ServerResponseHandler:
             'login': self.login,
             'user_list': self.user_list,
             'send': self.send,
-            'inbox': self.inbox_or_unread, 
+            'inbox': self.inbox_or_unread,
+            'unread': self.inbox_or_unread
         }
         
         if not command:
