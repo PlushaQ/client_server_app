@@ -42,7 +42,7 @@ class ClientThread(threading.Thread):
 
 
 class Server:
-    def __init__(self, host, port, database='database.env'):
+    def __init__(self, host, port, database='database/sqlite_database.env'):
         self.address = (host, port)
         self.server_start_time = datetime.datetime.now()
 
