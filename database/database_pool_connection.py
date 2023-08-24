@@ -17,16 +17,18 @@ class DatabaseConnectionPoolManager:
         self.time_limit = time_limit
 
         self.connections_realised = 0
+        self.connection_clearance_counter = 0
 
         self.run = True
 
         self.semaphore = threading.Semaphore(self.max_connections)
 
         self.thread = threading.Thread(target=self._connection_loop)
-        self.thread.daemon = True
         self.thread.start()
 
     def start_new_connection(self):
+        # Clear connections
+
         inactive_conn = None
         with self.semaphore:
             for conn in self.connections:
@@ -58,6 +60,8 @@ class DatabaseConnectionPoolManager:
                 conn.active = False
                 self.connections_realised += 1
 
+            self.connection_clearance_counter += 1
+
     def close_all_connections(self):
         with self.semaphore:
             self.run = False
@@ -79,7 +83,7 @@ Realised connections: {self.connections_realised}
 Active connections: {len(self.connections)}
 """)
 
-            time.sleep(1)
+            time.sleep(60)
 
             if self.time_limit:
                 self.working_time = time.time() - self.initialization_time

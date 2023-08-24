@@ -4,8 +4,8 @@ import time
 from database.database import ClientServerDatabase
 
 if __name__ == '__main__':
-    db = ClientServerDatabase('test_database.env', time_limit=300)
-
+    db = ClientServerDatabase('../database/sqlite_database.env', time_limit=300)
+    # db = ClientServerDatabase('test_database.env', time_limit=300)
 
     def stress_test():
         users = db.get_list_of_users()

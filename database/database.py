@@ -19,8 +19,9 @@ class ClientServerDatabase:
         # Function closing all connections in pool
         self.db_conn_pool.close_all_connections()
 
-    def db_query(self, sql_query, params=None):
+    def db_query(self, sql_query, params=()):
         # Query handler, main purpose of this function is starting connections and returning data from DB
+        conn = None
         try:
             conn = self.db_conn_pool.start_new_connection()
             if conn is None:
@@ -28,7 +29,8 @@ class ClientServerDatabase:
                 return self.db_query(sql_query, params)
         except Exception as e:
             print(f'Exception during getting connection: {e}')
-            self.db_conn_pool.return_connection_to_pool(conn)
+            if conn:
+                self.db_conn_pool.return_connection_to_pool(conn)
         else:
             try:
                 cursor = conn.cursor()
@@ -109,14 +111,14 @@ class ClientServerDatabase:
 
     def send_message(self, receiver, new_message):
         # Insert a new message into the 'messages' table
-        query = ('INSERT INTO messages VALUES (%s, %s, %s, %s, %s, %s)',
-                 (receiver,
+        query = 'INSERT INTO messages VALUES (%s, %s, %s, %s, %s, %s)'
+        params = (receiver,
                   new_message['message_id'],
                   new_message['sender'],
                   new_message['time'],
                   new_message['body'],
-                  new_message['read']))
-        self.db_query(query)
+                  new_message['read'])
+        self.db_query(query, params)
 
     def get_user_unread_messages(self, username):
         # Retrieve unread messages for a specific user from the 'messages' table
