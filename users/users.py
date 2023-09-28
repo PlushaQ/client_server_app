@@ -62,7 +62,7 @@ class User:
         if username in users:
             # Block catching problems with files
             messages = self.db.get_user_messages(username)
-            unread_messages = sum(1 for message in messages if messages[message]['read'] is False)
+            unread_messages = sum(1 for message in messages if messages[message]['read'] == 0)
             if unread_messages > 5:
                 return {'message': {'error': "Receiver has too many unread messages"}}
                 

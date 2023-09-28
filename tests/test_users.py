@@ -10,7 +10,7 @@ class TestUsers(unittest.TestCase):
         
         # Create a new user and initialize a test database
         self.user = User()
-        self.user.db = ClientServerDatabase('test_database.env')
+        self.user.db = ClientServerDatabase('unittest_db.env')
         
         # Define user details for login
         self.user_to_login = {'username': 'test1', 'password': 'test'}
@@ -18,16 +18,13 @@ class TestUsers(unittest.TestCase):
         # Register test users
         self.user.register_user('test1', 'test')
         self.user.register_user('admin', 'password', 'admin')
-        
         # Login as the user
         self.user.login_user(self.user_to_login['username'], self.user_to_login['password'])
 
     def tearDown(self):
         # Drop the test tables from the database
-        with self.user.db.db_conn as conn:
-            cursor = conn.cursor()
-            cursor.execute("DROP TABLE users, messages")
-            cursor.close()
+        self.user.db.db_query("DROP TABLE users, messages")
+        self.user.db.close_connections()
 
     def test_register_new_user(self):
         # Test registering a new user
@@ -41,7 +38,7 @@ class TestUsers(unittest.TestCase):
         user = {'username': 'test_user', 'password': 'pass'}
         user2 = {'username': 'test_user', 'password': 'pass'}
         self.user.register_user(user['username'], user['password'])
-        expected_output = json.dumps({'message': {'sign up': f'User {user2["username"]} already exists'}}, indent=1)
+        expected_output = {'message': {'sign up': f'User {user2["username"]} already exists'}}
         
         self.assertEqual(
             self.user.register_user(user2['username'], user2['password']),
@@ -52,7 +49,7 @@ class TestUsers(unittest.TestCase):
         # Test logging in with correct details
         user = {'username': 'admin', 'password': 'password'}
         msg = self.user.login_user(user['username'], user['password'])
-        expected_output = json.dumps({'message': {'log in': f'User {user["username"]} logged in successfully'}})
+        expected_output = {'message': {'log in': f'User {user["username"]} logged in successfully'}}
         
         self.assertEqual(msg, expected_output)
         self.assertEqual(self.user.username, user['username'])
@@ -63,8 +60,7 @@ class TestUsers(unittest.TestCase):
         self.user.role = None
         user = {'username': 'test2', 'password': 'test'}
         msg = self.user.login_user(user['username'], user['password'])
-        expected_output = json.dumps(
-            {'message': {'log in': 'User with this username doesn\'t exist or password is incorrect'}})
+        expected_output = {'message': {'log in': 'User with this username doesn\'t exist or password is incorrect'}}
         
         self.assertEqual(msg, expected_output)
         self.assertIsNone(self.user.username)
@@ -74,12 +70,12 @@ class TestUsers(unittest.TestCase):
         self.user.username = None
         self.user.role = None
         msg = self.user.user_list()
-        expected_output = json.dumps({'message': {'privileges': 'You need to login to access this!'}})
+        expected_output = {"message": {"privileges": "You need to login to access this!"}}
         self.assertEqual(msg, expected_output)
 
     def test_display_user_list_with_login(self):
         # Test displaying the user list after logging in
-        expected_output = json.dumps({'message': {1: 'test1', 2: 'admin'}})
+        expected_output = {'message': {1: 'test1', 2: 'admin'}}
         msg = self.user.user_list()
         self.assertEqual(msg, expected_output)
 
@@ -96,7 +92,7 @@ class TestUsers(unittest.TestCase):
         # Test sending a message to a non-existing user
         username = 'non_existing_user'
         msg = self.user.send_message(username, 'Hey', self.user.username)
-        expected_output = json.dumps({'message': {'error': f'User with username `{username}` doesn\'t exists!'}})
+        expected_output = {'message': {'error': f'User with username `{username}` doesn\'t exists!'}}
         
         self.assertEqual(msg, expected_output)
 
@@ -109,26 +105,26 @@ class TestUsers(unittest.TestCase):
             else:
                 self.user.send_message('admin', 'Hey', self.user.username)
         
-        expected_output = json.dumps({'message': {'error': "Receiver has too many unread messages"}})     
+        expected_output = {'message': {'error': "Receiver has too many unread messages"}}
         self.assertEqual(msg, expected_output)
 
     def test_show_full_inbox_without_any_messages(self):
         # Test showing the full inbox without any messages
         msg = self.user.show_inbox(self.user.username, 'inbox')
-        expected_output = json.dumps({'message': {'Empty inbox': 'You don\'t have messages'}})
+        expected_output = {'message': {'Empty inbox': 'You don\'t have messages'}}
         self.assertEqual(msg, expected_output)
 
     def test_show_full_inbox_for_logged_user(self):
         # Test showing the full inbox for the logged-in user
         self.user.send_message(self.user.username, 'Hey', 'admin')
         messages = self.user.db.get_user_messages(self.user.username)
-        response = json.loads(self.user.show_inbox(self.user.username, 'inbox'))['message']['inbox_messages']
+        response = self.user.show_inbox(self.user.username, 'inbox')['message']['inbox_messages']
         self.assertEqual(messages, response)
 
     def test_show_full_inbox_for_other_user(self):
         # Test showing the full inbox for another user (should return an error message)
         self.user.send_message('admin', 'Hey', self.user.username)
-        msg = json.dumps({'message': {'error': 'This isn\'t your inbox!'}})
+        msg = {'message': {'error': 'This isn\'t your inbox!'}}
         response = self.user.show_inbox('admin', 'inbox')
         self.assertEqual(msg, response)
 
@@ -138,7 +134,7 @@ class TestUsers(unittest.TestCase):
         self.user.role = 'admin'
         self.user.send_message(self.user.username, 'Hey', 'admin')
         messages = self.user.db.get_user_messages(self.user.username)
-        response = json.loads(self.user.show_inbox(self.user.username, 'inbox'))['message']['inbox_messages']
+        response = self.user.show_inbox(self.user.username, 'inbox')['message']['inbox_messages']
         self.assertEqual(messages, response)
 
     def test_marking_messages_as_unread(self):

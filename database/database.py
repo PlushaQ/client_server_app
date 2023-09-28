@@ -41,6 +41,7 @@ class ClientServerDatabase:
                 cursor.close()
                 self.db_conn_pool.return_connection_to_pool(conn)
             except Exception as e:
+                print(params)
                 print(f'Exception during getting making query: {e}')
                 self.db_conn_pool.return_connection_to_pool(conn)
             else:
@@ -80,19 +81,21 @@ class ClientServerDatabase:
     def get_user_info(self, username):
         # Retrieve information about a user from the 'users' table
         query = 'SELECT * FROM users WHERE username = %s', (username,)
-        user = self.db_query(*query)[0]
-        try:
-            user = {'username': user[0],
-                    'password': user[1],
-                    'role': user[2]}
-        except TypeError:
-            False
+        user = self.db_query(*query)
+        if user:
+            user = user[0]
+            try:
+                user = {'username': user[0],
+                        'password': user[1],
+                        'role': user[2]}
+            except TypeError:
+                return False
         return user
 
     def register_new_user(self, username, password, role):
         # Register a new user in the 'users' table
         query = 'INSERT INTO users VALUES (%s, %s, %s)', (username, password, role)
-        self.db_query(query)
+        self.db_query(*query)
 
     def get_user_messages(self, username):
         # Retrieve messages for a specific user from the 'messages' table
