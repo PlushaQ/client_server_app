@@ -19,8 +19,9 @@ class ClientServerDatabase:
         # Function closing all connections in pool
         self.db_conn_pool.close_all_connections()
 
-    def db_query(self, sql_query, params=None):
+    def db_query(self, sql_query, params=()):
         # Query handler, main purpose of this function is starting connections and returning data from DB
+        conn = None
         try:
             conn = self.db_conn_pool.start_new_connection()
             if conn is None:
@@ -28,11 +29,11 @@ class ClientServerDatabase:
                 return self.db_query(sql_query, params)
         except Exception as e:
             print(f'Exception during getting connection: {e}')
-            self.db_conn_pool.return_connection_to_pool(conn)
+            if conn:
+                self.db_conn_pool.return_connection_to_pool(conn)
         else:
             try:
                 cursor = conn.cursor()
-
                 cursor.execute(sql_query, params)
                 if sql_query.split()[0] == 'SELECT':
                     data = cursor.fetchall()
@@ -55,13 +56,13 @@ class ClientServerDatabase:
                     role VARCHAR(5)
                     );''',
 
-                   '''CREATE TABLE IF NOT EXISTS messages (
+                    '''CREATE TABLE IF NOT EXISTS messages (
                     username VARCHAR(255) REFERENCES users (username),
                     message_id INTEGER,
                     sender VARCHAR(255),
                     time TIMESTAMP,
-                    body VARCHAR(255),
-                    is_read INTEGER,
+                    body TEXT,
+                    is_read BOOLEAN,
                     PRIMARY KEY (username, message_id)
                     );''']
 
@@ -119,11 +120,11 @@ class ClientServerDatabase:
                   new_message['time'],
                   new_message['body'],
                   new_message['read'])
-        self.db_query(query, params=params)
+        self.db_query(query, params)
 
     def get_user_unread_messages(self, username):
         # Retrieve unread messages for a specific user from the 'messages' table
-        query = ("SELECT message_id, sender, time, body, is_read FROM messages WHERE username = %s AND is_read = 0",
+        query = ("SELECT message_id, sender, time, body, is_read FROM messages WHERE username = %s AND is_read = 'f'",
                  (username,))
         messages = self.db_query(*query)
         try:
@@ -142,5 +143,5 @@ class ClientServerDatabase:
 
     def mark_unread_as_read(self, username):
         # Mark unread messages as read for a specific user in the 'messages' table
-        query = "UPDATE messages SET is_read = 1 WHERE username = %s", (username,)
+        query = "UPDATE messages SET is_read = True WHERE username = %s", (username,)
         self.db_query(*query)

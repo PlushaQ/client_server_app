@@ -73,7 +73,7 @@ class User:
                 'sender': sender,
                 'time': time,
                 'body': message,
-                'read': 0}
+                'read': 'no'}
 
         # Saving new message
             self.db.send_message(username, new_message)
